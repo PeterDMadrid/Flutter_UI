@@ -1,6 +1,6 @@
 import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/bottom_navbar.dart';
+import 'package:flutter_hands/base/bottom_navbar.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 

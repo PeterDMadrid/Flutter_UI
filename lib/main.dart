@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/bottom_navbar.dart';
 import 'package:flutter_hands/splash_screen.dart';
 
 void main() {
