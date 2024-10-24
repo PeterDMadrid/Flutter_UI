@@ -36,23 +36,23 @@ class _BottomNavBarState extends State<BottomNavBar> {
         showSelectedLabels: false,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark_outline_sharp), // Default icon for Learn
-            activeIcon: Icon(Icons.bookmark_outlined), // Active icon for Learn
+            icon: Icon(Icons.bookmark_outline_sharp), 
+            activeIcon: Icon(Icons.bookmark_outlined), 
             label: "Learn",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center), // Default icon for Practice
-            activeIcon: Icon(Icons.fitness_center), // Active icon for Practice
+            icon: Icon(Icons.fitness_center),
+            activeIcon: Icon(Icons.fitness_center),
             label: "Practice",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_outlined), // Default icon for Challenge
-            activeIcon: Icon(Icons.play_circle_rounded), // Active icon for Challenge
+            icon: Icon(Icons.play_circle_outlined),
+            activeIcon: Icon(Icons.play_circle_rounded),
             label: "Challenge",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline), // Icon for Profile
-            activeIcon: Icon(Icons.person), // Active icon for Profile
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: "Profile",
           ),
         ],
