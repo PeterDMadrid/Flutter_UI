@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_icons/fluentui_icons.dart';
+import 'package:flutter_hands/screens/practice/practice_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -11,7 +12,7 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     const Center(child: Text("Learn")),
-    const Center(child: Text("Practice")),
+    const PracticeScreen(),
     const Center(child: Text("Challenge")),
     const Center(child: Text("Profile")),
   ];
