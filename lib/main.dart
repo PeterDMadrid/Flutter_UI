@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Splash Screen Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        fontFamily: 'Poppins'
       ),
       routes: {
         "/" : (context) => const SplashScreen()
