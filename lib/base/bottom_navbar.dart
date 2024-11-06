@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter_hands/screens/practice/practice_screen.dart';
 
 class BottomNavBar extends StatefulWidget {

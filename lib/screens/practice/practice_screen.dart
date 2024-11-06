@@ -20,11 +20,11 @@ class PracticeScreen extends StatelessWidget {
                 const SizedBox(
                   height: 20,
                 ),
-                const SignCard(text: "Signing", isRoseRed: true),
+                const SignCard(text: "Signing", desc: "Boost your skills and have a blast by magically signing the awesome numbers that pop up on the screen!", isRoseRed: true),
                 const SizedBox(
                   height: 20,
                 ),
-                const SignCard(text: "Recognition", isRoseRed: false,),
+                const SignCard(text: "Recognition", desc: "Identify those sneaky sign language numbers that are hiding on the screen", isRoseRed: false,),
               ],
             ),
           )
