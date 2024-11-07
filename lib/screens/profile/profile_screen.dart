@@ -42,9 +42,7 @@ class ProfileScreen extends StatelessWidget {
               right: 0,
               child: IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () {
-                  print("Edit Profile Button Pressed");
-                },
+                onPressed: () {},
               ),
             ),
           ],
