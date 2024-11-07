@@ -6,11 +6,11 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 class SignCard extends StatelessWidget {
   const SignCard({
     super.key,
-    required this.text,
+    required this.practiceType,
     required this.isRoseRed,
     required this.desc,
   });
-  final String text;
+  final String practiceType;
   final String desc;
   final bool isRoseRed;
 
@@ -41,7 +41,7 @@ class SignCard extends StatelessWidget {
               MainAxisSize.min,
           children: [
             Text(
-              text,
+              practiceType,
               style: AppStyles.headLineStyle2,
             ),
             const SizedBox(
