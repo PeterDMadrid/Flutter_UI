@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/res/media.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String name;
+  final String level;
   
-  const ProfileScreen({super.key, required this.name});
+  const ProfileScreen({super.key, required this.name, required this.level});
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +22,16 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   const CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/profile.jpg'),
+                    backgroundImage: AssetImage(AppMedia.defaultProfilePhoto), // Use the default profile photo from AppMedia
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    name,
+                    "Level $name",
                     style: AppStyles.headLineStyle1,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Level 1',
+                    level, // Use the passed level
                     style: TextStyle(
                       fontSize: 18,
                       color: AppStyles.lavender,

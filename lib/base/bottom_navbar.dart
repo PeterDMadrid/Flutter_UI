@@ -14,7 +14,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const Center(child: Text("Learn")),
     const PracticeScreen(),
     const Center(child: Text("Challenge")),
-    const ProfileScreen(name: "CJ Madrid"),
+    const ProfileScreen(name: "CJ Madrid", level: "1")
   ];
 
   var _selectedIndex = 0;
