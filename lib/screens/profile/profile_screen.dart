@@ -26,12 +26,12 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "Level $name",
+                    name,
                     style: AppStyles.headLineStyle1,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    level, // Use the passed level
+                    "Level $level", // Use the passed level
                     style: TextStyle(
                       fontSize: 18,
                       color: AppStyles.lavender,
