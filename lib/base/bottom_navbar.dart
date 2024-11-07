@@ -36,8 +36,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
         showSelectedLabels: false,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark_outline_sharp), 
-            activeIcon: Icon(Icons.bookmark_outlined), 
+            icon: Icon(Icons.school), 
+            activeIcon: Icon(Icons.school), 
             label: "Learn",
           ),
           BottomNavigationBarItem(
