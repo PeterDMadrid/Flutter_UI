@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/screens/practice/practice_screen.dart';
+import 'package:flutter_hands/screens/profile/profile_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -13,7 +14,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const Center(child: Text("Learn")),
     const PracticeScreen(),
     const Center(child: Text("Challenge")),
-    const Center(child: Text("Profile")),
+    const ProfileScreen(),
   ];
 
   var _selectedIndex = 0;
