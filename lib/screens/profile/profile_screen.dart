@@ -11,39 +11,38 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Stack(  // Stack to overlay the edit button
+        child: Stack(
           children: [
-            Center( // Wrap the Column with the Center widget to center content
+            Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center, // Ensures horizontal centering of the children
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  const SizedBox(height: 20), // Space for the edit button
+                  const SizedBox(height: 20),
                   const CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/profile.jpg'), // Replace with your image path
+                    backgroundImage: AssetImage('assets/profile.jpg'),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    name,  // Use the name passed in the constructor
-                    style: AppStyles.headLineStyle1, // Applying custom headline style for the name
+                    name,
+                    style: AppStyles.headLineStyle1,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Level 1',
                     style: TextStyle(
                       fontSize: 18,
-                      color: AppStyles.lavender, // Using custom lavender color for the job title
+                      color: AppStyles.lavender,
                     ),
                   ),
                 ],
               ),
             ),
-            Positioned(  // Position the edit button on the left side
+            Positioned(
               right: 0,
               child: IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
-                  // Handle the editing action here
                   print("Edit Profile Button Pressed");
                 },
               ),
