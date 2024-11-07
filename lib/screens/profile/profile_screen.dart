@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final String name;
+  
+  const ProfileScreen({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'CJ Madrid',
+                    name,  // Use the name passed in the constructor
                     style: AppStyles.headLineStyle1, // Applying custom headline style for the name
                   ),
                   const SizedBox(height: 8),
