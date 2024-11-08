@@ -22,12 +22,19 @@ class SignCard extends StatelessWidget {
         minHeight: 310,
       ),
       decoration: BoxDecoration(
-        color: isRoseRed ? AppStyles.roseRed : AppStyles.lavender,
+        gradient: LinearGradient(
+          colors: [
+            isRoseRed ? AppStyles.roseRed : AppStyles.lavender.withOpacity(0.6),
+            isRoseRed ? AppStyles.roseRed.withOpacity(0.6) : AppStyles.lavender,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(8),
         image: DecorationImage(
-          image: isRoseRed
-              ? const AssetImage(AppMedia.practiceSignBackground)
-              : const AssetImage(AppMedia.practiceRecognitionBackground),
+          image: AssetImage(isRoseRed
+              ? AppMedia.practiceSignBackground
+              : AppMedia.practiceRecognitionBackground),
           fit: BoxFit.none,
           scale: 2.5,
           alignment: const Alignment(0.9, -0.5),
@@ -37,8 +44,7 @@ class SignCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize:
-              MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               practiceType,
