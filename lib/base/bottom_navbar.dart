@@ -11,7 +11,7 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
-    const Center(child: Text("Learn")),
+    const Center(child: Text("LESSON")),
     const PracticeScreen(),
     const Center(child: Text("Challenge")),
     const ProfileScreen(name: "CJ Madrid", level: "1")
