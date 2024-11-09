@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
 class StartButton extends StatelessWidget {
-  const StartButton({super.key});
+  const StartButton({super.key, required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class StartButton extends StatelessWidget {
               ],
             ),
             child: InkWell(
-              onTap: () {},
+              onTap: onTap,
               customBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),

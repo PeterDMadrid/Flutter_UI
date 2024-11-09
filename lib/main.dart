@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/splash_screen.dart';
+import 'package:flutter_hands/screens/practice/signing_screen.dart';
+import 'package:flutter_hands/screens/practice/recognition_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +19,9 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins'
       ),
       routes: {
-        "/" : (context) => const SplashScreen()
+        "/" : (context) => const SplashScreen(),
+        "/signing_screen" : (context) => const SigningScreen(),
+        "/recognition_screen" : (context) => const RecognitionScreen(),
       }
     );
   }
