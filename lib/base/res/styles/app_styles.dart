@@ -10,5 +10,11 @@ class AppStyles {
       TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: textColor);
 
   static TextStyle headLineStyle2 =
+      TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor);
+
+  static TextStyle paragraph1 =
       const TextStyle(fontSize: 21, color: Colors.white);
+
+  static TextStyle paragraph2 =
+       TextStyle(fontSize: 16, color: textColor, height: 1.5);
 }

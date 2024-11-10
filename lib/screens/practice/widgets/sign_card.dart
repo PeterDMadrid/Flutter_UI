@@ -48,7 +48,7 @@ class SignCard extends StatelessWidget {
           children: [
             Text(
               practiceType,
-              style: AppStyles.headLineStyle2,
+              style: AppStyles.paragraph1,
             ),
             const SizedBox(
               height: 25,
@@ -59,7 +59,7 @@ class SignCard extends StatelessWidget {
                   flex: 6,
                   child: Text(
                     desc,
-                    style: AppStyles.headLineStyle2.copyWith(fontSize: 18),
+                    style: AppStyles.paragraph1.copyWith(fontSize: 18),
                   ),
                 ),
                 const Spacer(flex: 4),
@@ -68,7 +68,10 @@ class SignCard extends StatelessWidget {
             const SizedBox(
               height: 35,
             ),
-            const Center(child: StartButton()),
+            Center(
+                child: StartButton(
+              onTap: () => Navigator.pushNamed(context, isRoseRed? "/signing_screen" : "/recognition_screen"),
+            )),
           ],
         ),
       ),
