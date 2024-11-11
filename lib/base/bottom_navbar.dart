@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/screens/practice/practice_screen.dart';
 import 'package:flutter_hands/screens/profile/profile_screen.dart';
+import 'package:flutter_hands/screens/practice/practice_screen.dart';
+import 'package:flutter_hands/screens/challenge/challenge_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -13,7 +14,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     const Center(child: Text("LESSON")),
     const PracticeScreen(),
-    const Center(child: Text("Challenge")),
+    const ChallengeScreen(),
     const ProfileScreen(name: "CJ Madrid", level: "1")
   ];
 

@@ -3,19 +3,48 @@ import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/start_button.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
+enum CardType { recognition, signing, challenge }
+
 class SignCard extends StatelessWidget {
   const SignCard({
     super.key,
     required this.practiceType,
-    required this.isRoseRed,
     required this.desc,
+    this.cardType = CardType.recognition,
   });
+
   final String practiceType;
   final String desc;
-  final bool isRoseRed;
+  final CardType cardType;
 
   @override
   Widget build(BuildContext context) {
+    Color startColor;
+    Color endColor;
+    String backgroundImage;
+    String route;
+
+    switch (cardType) {
+      case CardType.recognition:
+        startColor = AppStyles.myblue;
+        endColor = AppStyles.myblue.withOpacity(0.6);
+        backgroundImage = AppMedia.practiceSignBackground;
+        route = "/recognition_screen";
+        break;
+      case CardType.signing:
+        startColor = AppStyles.lavender.withOpacity(0.6);
+        endColor = AppStyles.lavender;
+        backgroundImage = AppMedia.practiceRecognitionBackground;
+        route = "/signing_screen";
+        break;
+      case CardType.challenge:
+        startColor = AppStyles.roseRed;
+        endColor = AppStyles.roseRed.withOpacity(0.6);
+        backgroundImage = AppMedia.challengeBackground;
+        route = "/challenge_screen";
+        break;
+    }
+
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(
@@ -23,18 +52,13 @@ class SignCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            isRoseRed ? AppStyles.roseRed : AppStyles.lavender.withOpacity(0.6),
-            isRoseRed ? AppStyles.roseRed.withOpacity(0.6) : AppStyles.lavender,
-          ],
+          colors: [startColor, endColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(8),
         image: DecorationImage(
-          image: AssetImage(isRoseRed
-              ? AppMedia.practiceSignBackground
-              : AppMedia.practiceRecognitionBackground),
+          image: AssetImage(backgroundImage),
           fit: BoxFit.none,
           scale: 2.5,
           alignment: const Alignment(0.9, -0.5),
@@ -43,6 +67,7 @@ class SignCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -69,9 +94,10 @@ class SignCard extends StatelessWidget {
               height: 35,
             ),
             Center(
-                child: StartButton(
-              onTap: () => Navigator.pushNamed(context, isRoseRed? "/signing_screen" : "/recognition_screen"),
-            )),
+              child: StartButton(
+                onTap: () => Navigator.pushNamed(context, route),
+              ),
+            ),
           ],
         ),
       ),

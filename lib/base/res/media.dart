@@ -4,4 +4,5 @@ class AppMedia {
   static const practiceSignBackground = '$_baseMedia/sign_poster_clear.png';
   static const practiceRecognitionBackground = '$_baseMedia/reco_poster_clear.png';
   static const defaultProfilePhoto = '$_baseMedia/default_profile_photo.jpg';
+  static const challengeBackground = '$_baseMedia/challenge_poster.png';
 }
