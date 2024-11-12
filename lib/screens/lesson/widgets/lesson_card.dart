@@ -7,11 +7,13 @@ class LessonCard extends StatelessWidget {
     required this.lessonTitle,
     required this.lessonSubtitle,
     required this.lessonIcon,
+    required this.onPressed,
   });
 
   final String lessonTitle;
   final String lessonSubtitle;
   final String lessonIcon;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,7 @@ class LessonCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {},
+               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppStyles.buttonColor,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
