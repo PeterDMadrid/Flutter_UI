@@ -4,11 +4,13 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 class LessonCard extends StatelessWidget {
   const LessonCard({
     super.key,
-    required this.lessonName,
+    required this.lessonTitle,
+    required this.lessonSubtitle,
     required this.lessonIcon,
   });
 
-  final String lessonName;
+  final String lessonTitle;
+  final String lessonSubtitle;
   final String lessonIcon;
 
   @override
@@ -43,8 +45,12 @@ class LessonCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              lessonName,
+              lessonTitle,
               style: AppStyles.headLineStyle2,
+            ),
+            Text(
+              lessonSubtitle,
+              style: AppStyles.paragraph2,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
