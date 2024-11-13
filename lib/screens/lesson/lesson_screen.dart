@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/screens/lesson/widgets/lesson_card.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_hands/screens/lesson/modules/Introduction_screen.dart';
+import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
+import 'package:flutter_hands/screens/lesson/modules/examples_screen.dart';
+
 
 
 class LessonScreen extends StatelessWidget {
@@ -20,22 +24,40 @@ class LessonScreen extends StatelessWidget {
                 const SizedBox(height: 40),
                 Text("Learn Your Signs", style: AppStyles.headLineStyle1),
                 const SizedBox(height: 20,),
-                const LessonCard(
+                LessonCard(
                   lessonTitle:"Introduction" ,
                   lessonSubtitle: "Numbers 0-9", 
-                  lessonIcon: AppMedia.practiceRecognitionBackground
+                  lessonIcon: AppMedia.practiceRecognitionBackground,
+                  onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Introduction()),
+            );
+          },
                 ),
                 const SizedBox(height: 20,),
-                const LessonCard(
+                LessonCard(
                   lessonTitle:"Two Digits" ,  
                   lessonSubtitle: "Numbers 10-99", 
-                  lessonIcon: AppMedia.practiceRecognitionBackground
+                  lessonIcon: AppMedia.practiceRecognitionBackground,
+                  onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const TwoDigitsScreen()),
+            );
+          },
                 ),
                 const SizedBox(height: 20,),
-                const LessonCard(
+                LessonCard(
                   lessonTitle:"Examples" ,  
                   lessonSubtitle: "Numbers 1-99", 
-                  lessonIcon: AppMedia.practiceRecognitionBackground
+                  lessonIcon: AppMedia.practiceRecognitionBackground,
+                  onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ExamplesScreen()),
+            );
+          },
                 ),
                 const SizedBox(height: 20,),
               ],
