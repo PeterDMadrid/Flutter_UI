@@ -11,6 +11,12 @@ class SigningScreen extends StatefulWidget {
 class _SigningScreenState extends State<SigningScreen> {
   OverlayEntry? _overlayEntry;
 
+  final String instructions = """1. Look at the number word on the screen (like "Three").
+
+2. Use your hand to sign the number in front of the camera.
+
+3. Wait for the app to check your sign and give feedback!""";
+
   @override
   void initState() {
     super.initState();
@@ -21,13 +27,14 @@ class _SigningScreenState extends State<SigningScreen> {
 
   void _showInstructions() {
     _overlayEntry = OverlayEntry(
-        builder: (context) => Instructions(
-              onGotIt: () {
-                _overlayEntry?.remove();
-                _overlayEntry = null;
-              },
-              instructionContent: "1. Signing inst",
-            ));
+      builder: (context) => Instructions(
+        onGotIt: () {
+          _overlayEntry?.remove();
+          _overlayEntry = null;
+        },
+        instructionContent: instructions,
+      ),
+    );
 
     Overlay.of(context).insert(_overlayEntry!);
   }
