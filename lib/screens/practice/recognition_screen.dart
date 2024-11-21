@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
+import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -51,6 +53,32 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recognition Practice'),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 45),
+          const Center(
+            child: Text(
+              "Three",
+              style: TextStyle(fontSize: 50),
+            )
+          ),
+          GridView.count(
+            crossAxisSpacing: 8.0,
+            mainAxisSpacing: 8.0, 
+            crossAxisCount: 2, 
+            childAspectRatio: 1, 
+            padding: const EdgeInsets.all(60.0), 
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: const <Widget>[
+              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
+              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
+              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
+              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
+            ],
+          ),
+        ],
       ),
     );
   }
