@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String name;
-  final String level;
+  final int level;
   
   const ProfileScreen({super.key, required this.name, required this.level});
 
