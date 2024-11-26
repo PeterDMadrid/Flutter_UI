@@ -7,7 +7,8 @@ class AuthService {
   static const _storage = FlutterSecureStorage();
 
   // Store both token and user data
-  static Future<void> saveAuthData(String token, Map<String, dynamic> userData) async {
+  static Future<void> saveAuthData(
+      String token, Map<String, dynamic> userData) async {
     await _storage.write(key: 'token', value: token);
     await _storage.write(key: 'userData', value: jsonEncode(userData));
   }
@@ -21,26 +22,26 @@ class AuthService {
     return await _storage.read(key: 'token');
   }
 
-static Future<Map<String, dynamic>?> getUserData() async {
-  try {
-    final userDataStr = await _storage.read(key: 'userData');
-    final token = await getToken();
-    
-    if (userDataStr != null && token != null) {
-      // Verify the token is still valid
-      final isValid = await checkAuthentication();
-      if (!isValid) {
-        await clearAuthData();
-        return null;
+  static Future<Map<String, dynamic>?> getUserData() async {
+    try {
+      final userDataStr = await _storage.read(key: 'userData');
+      final token = await getToken();
+
+      if (userDataStr != null && token != null) {
+        // Verify the token is still valid
+        final isValid = await checkAuthentication();
+        if (!isValid) {
+          await clearAuthData();
+          return null;
+        }
+
+        return jsonDecode(userDataStr);
       }
-      
-      return jsonDecode(userDataStr);
+    } catch (e) {
+      print('Error getting user data: $e');
     }
-  } catch (e) {
-    print('Error getting user data: $e');
+    return null;
   }
-  return null;
-}
 
   static Future<bool> checkAuthentication() async {
     final token = await getToken();
@@ -75,7 +76,8 @@ static Future<Map<String, dynamic>?> getUserData() async {
     return null;
   }
 
-  static Future<Map<String, dynamic>?> register(String username, int profilePictureId) async {
+  static Future<Map<String, dynamic>?> register(
+      String username, int profilePictureId) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/register/'),
@@ -94,5 +96,25 @@ static Future<Map<String, dynamic>?> getUserData() async {
       print('Registration error: $e');
     }
     return null;
+  }
+
+  static Future<bool> logout() async {
+    try {
+      final token = await getToken();
+      if (token == null) return false;
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/logout-user/'),
+        headers: {'Authorization': 'Token $token'},
+      );
+
+      if (response.statusCode == 200) {
+        await clearAuthData();
+        return true;
+      }
+    } catch (e) {
+      print('Logout error: $e');
+    }
+    return false;
   }
 }

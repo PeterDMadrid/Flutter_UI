@@ -14,6 +14,7 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State {
   String? username;
+  String? profilePicture;
   int currentLevel = 1;
   bool isLoading = true;
   var _selectedIndex = 0;
@@ -32,6 +33,9 @@ class _BottomNavBarState extends State {
       if (userData != null) {
         setState(() {
           username = userData['username'];
+          profilePicture = userData['profile_picture'] != null
+            ? userData['profile_picture']['image']
+            : null;
           currentLevel = userData['level'];
           isLoading = false;
         });
@@ -65,6 +69,7 @@ class _BottomNavBarState extends State {
       ProfileScreen(
         name: username ?? "Guest",
         level: currentLevel,
+        profilePicture: profilePicture,
       ),
     ];
 

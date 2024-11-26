@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String name;
   final int level;
-  
-  const ProfileScreen({super.key, required this.name, required this.level});
+  final String? profilePicture;
 
+  const ProfileScreen({super.key, required this.name, required this.level, required this.profilePicture
+  
+  });
+    Future<void> logoutUser(BuildContext context) async {
+    try {
+      final success = await AuthService.logout();
+      if (success) {
+        Navigator.pushReplacementNamed(context, '/bottom_navbar');
+        print('User logged out successfully.');
+      } else {
+        print('Logout failed.');
+      }
+    } catch (e) {
+      print('Error during logout: $e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   const CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage(AppMedia.defaultProfilePhoto), // Use the default profile photo from AppMedia
+                    backgroundImage: AssetImage(AppMedia.defaultProfilePhoto),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -31,12 +47,16 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Level $level", // Use the passed level
+                    "Level $level",
                     style: TextStyle(
                       fontSize: 18,
                       color: AppStyles.lavender,
                     ),
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.logout_outlined),
+                    onPressed: () => logoutUser(context),
+                  )
                 ],
               ),
             ),
