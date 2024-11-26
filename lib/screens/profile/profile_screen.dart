@@ -33,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.grey[200],
         child: ClipOval(
           child: Image.network(
-            'http://127.0.0.1:8000${profilePicture!}',
+            profilePicture!,
             width: 100,
             height: 100,
             fit: BoxFit.cover,

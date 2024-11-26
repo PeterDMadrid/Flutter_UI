@@ -28,8 +28,7 @@ class _CheckAuthState extends State<CheckAuth> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const BottomNavBar(
-            ),
+            builder: (context) => BottomNavBar(initialUserData: userData)
           ),
         );
       } else {

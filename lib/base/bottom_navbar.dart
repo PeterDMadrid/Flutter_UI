@@ -6,23 +6,40 @@ import 'package:flutter_hands/screens/practice/practice_screen.dart';
 import 'package:flutter_hands/screens/challenge/challenge_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  final Map<String, dynamic>? initialUserData;
+  
+  const BottomNavBar({
+    super.key, 
+    this.initialUserData,
+  });
 
   @override
   State createState() => _BottomNavBarState();
 }
 
-class _BottomNavBarState extends State {
+class _BottomNavBarState extends State<BottomNavBar> {
   String? username;
   String? profilePicture;
   int currentLevel = 1;
-  bool isLoading = true;
+  bool isLoading = false;
   var _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(_loadUserData);
+    if (widget.initialUserData != null) {
+      _initializeUserData(widget.initialUserData!);
+    }
+  }
+
+  void _initializeUserData(Map<String, dynamic> userData) {
+    setState(() {
+      username = userData['username'];
+      profilePicture = userData['profile_picture'] != null
+        ? 'http://127.0.0.1:8000${userData['profile_picture']['image']}'
+        : null;
+      currentLevel = userData['level'];
+    });
   }
 
   Future<void> _loadUserData() async {
@@ -34,8 +51,8 @@ class _BottomNavBarState extends State {
         setState(() {
           username = userData['username'];
           profilePicture = userData['profile_picture'] != null
-            ? userData['profile_picture']['image']
-            : null;
+          ? 'http://127.0.0.1:8000${userData['profile_picture']['image']}'
+          : null;
           currentLevel = userData['level'];
           isLoading = false;
         });
