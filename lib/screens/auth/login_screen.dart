@@ -24,25 +24,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> fetchProfilePictures() async {
-    try {
-      final response = await http.get(Uri.parse('http://127.0.0.1:8000/api/auth/profile-pictures/'));
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          profilePictures = data.map((e) => {
-                "id": e['id'],
-                "image": e['image'],
-              }).toList();
-        });
-      } else {
-        throw Exception('Failed to load profile pictures');
-      }
-    } catch (error) {
+  try {
+    final response = await http.get(Uri.parse('http://127.0.0.1:8000/api/auth/profile-pictures/'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      setState(() {
+        profilePictures = data.map((e) => {
+          "id": e['id'],
+          "name": e['name'],
+          // Convert relative path to absolute URL
+          "image": 'http://127.0.0.1:8000${e['image']}',
+        }).toList();
+      });
+    } else {
+      throw Exception('Failed to load profile pictures');
+    }
+  } catch (error) {
+    if (mounted) {  // Check if widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching profile pictures: $error')),
       );
     }
   }
+}
 
  Future<void> createUser() async {
   final username = usernameController.text;

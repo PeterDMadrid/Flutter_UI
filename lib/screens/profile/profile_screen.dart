@@ -8,22 +8,60 @@ class ProfileScreen extends StatelessWidget {
   final int level;
   final String? profilePicture;
 
-  const ProfileScreen({super.key, required this.name, required this.level, required this.profilePicture
-  
+  const ProfileScreen({
+    super.key, 
+    required this.name, 
+    required this.level, 
+    required this.profilePicture
   });
-    Future<void> logoutUser(BuildContext context) async {
+
+  Future<void> logoutUser(BuildContext context) async {
     try {
       final success = await AuthService.logout();
       if (success) {
         Navigator.pushReplacementNamed(context, '/bottom_navbar');
-        print('User logged out successfully.');
-      } else {
-        print('Logout failed.');
       }
     } catch (e) {
       print('Error during logout: $e');
     }
   }
+
+  Widget buildProfileImage() {
+    if (profilePicture != null) {
+      return CircleAvatar(
+        radius: 50,
+        backgroundColor: Colors.grey[200],
+        child: ClipOval(
+          child: Image.network(
+            'http://127.0.0.1:8000${profilePicture!}',
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                AppMedia.defaultProfilePhoto,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      return const CircleAvatar(
+        radius: 50,
+        backgroundImage: AssetImage(AppMedia.defaultProfilePhoto),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,10 +74,7 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   const SizedBox(height: 20),
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage(AppMedia.defaultProfilePhoto),
-                  ),
+                  buildProfileImage(),
                   const SizedBox(height: 16),
                   Text(
                     name,
