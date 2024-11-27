@@ -19,7 +19,7 @@ class ProfileScreen extends StatelessWidget {
     try {
       final success = await AuthService.logout();
       if (success) {
-        Navigator.pushReplacementNamed(context, '/bottom_navbar');
+        Navigator.pushReplacementNamed(context, '/auth_check');
       }
     } catch (e) {
       print('Error during logout: $e');
