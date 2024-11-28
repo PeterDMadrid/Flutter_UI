@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_hands/base/bottom_navbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -58,10 +59,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   try {
-    final data = await AuthService.register(username, selectedProfilePictureId!);
-    if (data != null) {
+    await AuthService.register(username, selectedProfilePictureId!);
+
+    final userData = await AuthService.getUserData();
+    if (userData != null) {
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/bottom_navbar');
+      print('Authenticated as(loginscreen): ${userData['username']}');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BottomNavBar(initialUserData: userData)
+          ),
+        );
     } else {
       throw Exception('Failed to create user');
     }

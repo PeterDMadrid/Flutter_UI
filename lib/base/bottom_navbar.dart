@@ -34,6 +34,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   void _initializeUserData(Map<String, dynamic> userData) {
     setState(() {
+      print("this happened");
       username = userData['username'];
       profilePicture = userData['profile_picture'] != null
         ? 'http://127.0.0.1:8000${userData['profile_picture']['image']}'
@@ -44,6 +45,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   Future<void> _loadUserData() async {
     try {
+      print("loaduserdata");
       final userData = await AuthService.getUserData();
       if (!mounted) return;
       
@@ -56,7 +58,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           currentLevel = userData['level'];
           isLoading = false;
         });
-        print('Authenticated as: $username');
+        print('Authenticated as(bottomnavbar): $username');
       } else {
         await AuthService.clearAuthData();
         if (!mounted) return;
