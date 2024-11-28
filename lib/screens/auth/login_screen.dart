@@ -64,7 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final userData = await AuthService.getUserData();
     if (userData != null) {
       if (!mounted) return;
-      print('Authenticated as(loginscreen): ${userData['username']}');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
