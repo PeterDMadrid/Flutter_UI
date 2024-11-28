@@ -24,7 +24,6 @@ class _CheckAuthState extends State<CheckAuth> {
       if (!mounted) return;
 
       if (userData != null) {
-        print('Authenticated as: ${userData['username']}');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

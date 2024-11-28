@@ -42,35 +42,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
     });
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      final userData = await AuthService.getUserData();
-      if (!mounted) return;
-      
-      if (userData != null) {
-        setState(() {
-          username = userData['username'];
-          profilePicture = userData['profile_picture'] != null
-          ? 'http://127.0.0.1:8000${userData['profile_picture']['image']}'
-          : null;
-          currentLevel = userData['level'];
-          isLoading = false;
-        });
-        print('Authenticated as: $username');
-      } else {
-        await AuthService.clearAuthData();
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (error) {
-      print('Error loading user data: $error');
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
