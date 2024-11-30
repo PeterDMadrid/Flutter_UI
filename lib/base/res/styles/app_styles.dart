@@ -7,7 +7,10 @@ class AppStyles {
   static Color buttonColor = const Color.fromARGB(255, 55, 133, 221);
   static Color khaki = const Color.fromARGB(255, 206, 192, 65);
   static Color myblue = const Color(0xFF4AABCD);
-  
+
+  static TextStyle darkTextStyle =
+      const TextStyle(fontSize: 26, color: Color(0xFF0B0B0B));
+
   static TextStyle headLineStyle1 =
       TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: textColor);
 
@@ -18,5 +21,5 @@ class AppStyles {
       const TextStyle(fontSize: 21, color: Colors.white);
 
   static TextStyle paragraph2 =
-       TextStyle(fontSize: 16, color: textColor, height: 1.5);
+      TextStyle(fontSize: 16, color: textColor, height: 1.5);
 }
