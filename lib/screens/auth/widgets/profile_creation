@@ -1,0 +1,128 @@
+import 'package:flutter/material.dart';
+
+class ProfileCreation extends StatelessWidget {
+  final TextEditingController usernameController;
+  final double screenWidth;
+  final double screenHeight;
+  final double fontSize;
+  final double gridSpacing;
+  final List<Map<String, dynamic>> profilePictures;
+  final int? selectedProfilePictureId;
+  final Function(int) onProfilePictureSelect;
+  final VoidCallback onCreateProfile;
+  final VoidCallback onCancel;
+
+  const ProfileCreation({
+    super.key,
+    required this.usernameController,
+    required this.screenWidth,
+    required this.screenHeight,
+    required this.fontSize,
+    required this.gridSpacing,
+    required this.profilePictures,
+    required this.selectedProfilePictureId,
+    required this.onProfilePictureSelect,
+    required this.onCreateProfile,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: TextField(
+              controller: usernameController,
+              style: TextStyle(color: const Color.fromARGB(255, 81, 81, 81), fontSize: fontSize),
+              decoration: InputDecoration(
+                labelText: 'Enter username',
+                labelStyle: TextStyle(color: const Color.fromARGB(255, 50, 50, 50), fontSize: fontSize),
+                enabledBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.02),
+          Expanded(
+            child: GridView.builder(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: gridSpacing,
+                mainAxisSpacing: gridSpacing,
+                childAspectRatio: 1,
+              ),
+              itemCount: profilePictures.length,
+              itemBuilder: (context, index) {
+                final profile = profilePictures[index];
+                return GestureDetector(
+                  onTap: () => onProfilePictureSelect(profile['id']),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          profile['image'],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.error,
+                              color: Colors.red,
+                            );
+                          },
+                        ),
+                      ),
+                      if (selectedProfilePictureId == profile['id'])
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.blue,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.02),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onCreateProfile,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Create Profile'),
+                  ),
+                ),
+                SizedBox(width: screenWidth * 0.04),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onCancel,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.02),
+        ],
+      ),
+    );
+  }
+}
