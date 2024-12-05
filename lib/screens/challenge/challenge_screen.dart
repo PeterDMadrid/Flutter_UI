@@ -7,10 +7,13 @@ class ChallengeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: ListView(
         children: [
           Container(
+            decoration: BoxDecoration(color: AppStyles.backgroundColor),
+            height: screenHeight,
             padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

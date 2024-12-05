@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppStyles {
-  static Color textColor = const Color(0xFF3b3b3b);
+  static Color textColor = const Color(0xFFC6C6C6);
   static Color roseRed = const Color.fromARGB(255, 184, 50, 72);
   static Color lavender = const Color(0xFF7A32A9);
   static Color buttonColor = const Color.fromARGB(255, 55, 133, 221);
   static Color khaki = const Color.fromARGB(255, 206, 192, 65);
   static Color myblue = const Color(0xFF4AABCD);
+  static Color backgroundColor = const Color(0xFF102A43);
+  static Color headlineColor = const Color(0xFFDCDCDC);
 
   static TextStyle darkTextStyle =
       const TextStyle(fontSize: 26, color: Color(0xFF0B0B0B));
 
-  static TextStyle headLineStyle1 =
-      TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: textColor);
+  static TextStyle headLineStyle1 = TextStyle(
+      fontSize: 26, fontWeight: FontWeight.bold, color: headlineColor);
 
-  static TextStyle headLineStyle2 =
-      TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor);
+  static TextStyle headLineStyle2 = const TextStyle(
+      fontSize: 24, fontWeight: FontWeight.bold, color: Colors.amber);
 
   static TextStyle paragraph1 =
       const TextStyle(fontSize: 21, color: Colors.white);

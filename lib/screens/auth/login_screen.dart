@@ -159,46 +159,49 @@ class _LoginScreenState extends State<LoginScreen> {
     
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(screenSize.width * 0.08),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "Users",
-                style: AppStyles.headLineStyle1,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: screenSize.height * 0.04),
-              if (!isCreatingNewProfile)
-                ProfileSelection(
-                  profileImageSize: profileImageSize,
-                  gridSpacing: gridSpacing,
-                  fontSize: fontSize,
-                  savedProfiles: savedProfiles,
-                  onProfileSelect: loginWithProfile,
-                  onAddProfileTap: () => setState(() => isCreatingNewProfile = true),
-                )
-              else
-                ProfileCreation(
-                  usernameController: usernameController,
-                  screenWidth: screenSize.width,
-                  screenHeight: screenSize.height,
-                  fontSize: fontSize,
-                  gridSpacing: gridSpacing,
-                  profilePictures: profilePictures,
-                  selectedProfilePictureId: selectedProfilePictureId,
-                  onProfilePictureSelect: (id) => setState(() => selectedProfilePictureId = id),
-                  onCreateProfile: createNewProfile,
-                  onCancel: () {
-                    setState(() {
-                      isCreatingNewProfile = false;
-                      usernameController.clear();
-                      selectedProfilePictureId = null;
-                    });
-                  },
+        child: Container(
+          decoration: BoxDecoration(color: AppStyles.backgroundColor),
+          child: Padding(
+            padding: EdgeInsets.all(screenSize.width * 0.08),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Users",
+                  style: AppStyles.headLineStyle1,
+                  textAlign: TextAlign.center,
                 ),
-            ],
+                SizedBox(height: screenSize.height * 0.04),
+                if (!isCreatingNewProfile)
+                  ProfileSelection(
+                    profileImageSize: profileImageSize,
+                    gridSpacing: gridSpacing,
+                    fontSize: fontSize,
+                    savedProfiles: savedProfiles,
+                    onProfileSelect: loginWithProfile,
+                    onAddProfileTap: () => setState(() => isCreatingNewProfile = true),
+                  )
+                else
+                  ProfileCreation(
+                    usernameController: usernameController,
+                    screenWidth: screenSize.width,
+                    screenHeight: screenSize.height,
+                    fontSize: fontSize,
+                    gridSpacing: gridSpacing,
+                    profilePictures: profilePictures,
+                    selectedProfilePictureId: selectedProfilePictureId,
+                    onProfilePictureSelect: (id) => setState(() => selectedProfilePictureId = id),
+                    onCreateProfile: createNewProfile,
+                    onCancel: () {
+                      setState(() {
+                        isCreatingNewProfile = false;
+                        usernameController.clear();
+                        selectedProfilePictureId = null;
+                      });
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ),

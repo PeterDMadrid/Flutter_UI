@@ -11,6 +11,7 @@ class PracticeScreen extends StatelessWidget {
       body: ListView(
         children: [
           Container(
+            decoration: BoxDecoration(color: AppStyles.backgroundColor),
             padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

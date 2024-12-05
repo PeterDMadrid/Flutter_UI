@@ -64,45 +64,50 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Stack(
-          children: [
-            Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const SizedBox(height: 20),
-                  buildProfileImage(),
-                  const SizedBox(height: 16),
-                  Text(
-                    name,
-                    style: AppStyles.headLineStyle1,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Level $level",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppStyles.lavender,
+      body: Container(
+        decoration: BoxDecoration(color: AppStyles.backgroundColor),
+        height: screenHeight,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(height: 20),
+                    buildProfileImage(),
+                    const SizedBox(height: 16),
+                    Text(
+                      name,
+                      style: AppStyles.headLineStyle1,
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.logout_outlined),
-                    onPressed: () => logoutUser(context),
-                  )
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      "Level $level",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: AppStyles.lavender,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.logout_outlined),
+                      onPressed: () => logoutUser(context),
+                    )
+                  ],
+                ),
               ),
-            ),
-            Positioned(
-              right: 0,
-              child: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {},
+              Positioned(
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {},
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

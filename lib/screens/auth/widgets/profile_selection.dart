@@ -42,7 +42,7 @@ class ProfileSelection extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: Colors.black87,
+                            color: AppStyles.textColor,
                             width: 2,
                           ),
                         ),
@@ -65,7 +65,7 @@ class ProfileSelection extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       profile['username'],
-                      style: AppStyles.darkTextStyle.copyWith(fontSize: fontSize),
+                      style: AppStyles.darkTextStyle.copyWith(fontSize: fontSize, color: AppStyles.textColor),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -85,21 +85,21 @@ class ProfileSelection extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: Colors.black87,
+                              color: AppStyles.textColor,
                               width: 2,
                             ),
                           ),
                           child: Icon(
                             Icons.add_circle_outline,
                             size: profileImageSize * 0.4,
-                            color: Colors.black87,
+                            color: AppStyles.textColor,
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Add Profile',
-                        style: AppStyles.darkTextStyle.copyWith(fontSize: fontSize)
+                        style: AppStyles.darkTextStyle.copyWith(fontSize: fontSize, color: AppStyles.textColor)
                       ),
                     ],
                   ),
