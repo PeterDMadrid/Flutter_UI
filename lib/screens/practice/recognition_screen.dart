@@ -1,5 +1,5 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
 
@@ -19,11 +19,35 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
 3. Tap the hand sign that matches the number word!""";
 
+  int randomNumber = 0;
+  late List<int> choices;
+
   @override
   void initState() {
     super.initState();
+    _generateRandomNumberAndChoices();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
+    });
+  }
+
+  void _generateRandomNumberAndChoices() {
+    setState(() {
+      randomNumber = Random().nextInt(10); // Generate random number (0-9)
+
+      // Generate 3 unique incorrect numbers
+      final random = Random();
+      final incorrectNumbers = <int>{};
+      while (incorrectNumbers.length < 3) {
+        int randomChoice = random.nextInt(10);
+        if (randomChoice != randomNumber) {
+          incorrectNumbers.add(randomChoice);
+        }
+      }
+
+      // Add the correct answer and shuffle
+      choices = [randomNumber, ...incorrectNumbers].toList();
+      choices.shuffle();
     });
   }
 
@@ -39,6 +63,14 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     );
 
     Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _checkAnswer(int selectedChoice) {
+    if (selectedChoice == randomNumber) {
+      print('Correct choice: $selectedChoice');
+    } else {
+      print('Incorrect choice: $selectedChoice');
+    }
   }
 
   @override
@@ -57,26 +89,26 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       body: Column(
         children: [
           const SizedBox(height: 45),
-          const Center(
+          Center(
             child: Text(
-              "Three",
-              style: TextStyle(fontSize: 50),
-            )
+              randomNumber.toString(), // Display the random number
+              style: const TextStyle(fontSize: 50),
+            ),
           ),
           GridView.count(
             crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0, 
-            crossAxisCount: 2, 
-            childAspectRatio: 1, 
-            padding: const EdgeInsets.all(60.0), 
+            mainAxisSpacing: 8.0,
+            crossAxisCount: 2,
+            childAspectRatio: 1,
+            padding: const EdgeInsets.all(60.0),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            children: const <Widget>[
-              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
-              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
-              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
-              ChoiceCard(signImage: AppMedia.defaultProfilePhoto),
-            ],
+            children: choices.map((choice) {
+              return ChoiceCard(
+                choice: choice.toString(),
+                onPressed: () => _checkAnswer(choice), // Pass the logic here
+              );
+            }).toList(),
           ),
         ],
       ),
