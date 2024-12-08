@@ -9,18 +9,21 @@ class Introduction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(children: [
-          ReadingEffect(
-            text: "Hello there, $name",
-            style: AppStyles.headLineStyle2,
-            effect: AnimationEffect.typewriter,
-          )
-        ]),
+      body: Container(
+        decoration: BoxDecoration(color: AppStyles.backgroundColor),
+        width: screenWidth,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(children: [
+            ReadingEffect(
+              text: "Hello there, $name",
+              style: AppStyles.headLineStyle2,
+              effect: AnimationEffect.typewriter,
+            )
+          ]),
+        ),
       ),
     );
   }
