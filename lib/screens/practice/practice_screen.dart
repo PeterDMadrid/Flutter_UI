@@ -8,28 +8,35 @@ class PracticeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        children: [
-          Container(
-            decoration: BoxDecoration(color: AppStyles.backgroundColor),
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                Text("Master Your Signs", style: AppStyles.headLineStyle1),
-                const SizedBox(
-                  height: 20,
-                ),
-                const SignCard(practiceType: "Signing", desc: "Boost your skills and have a blast by magically signing the awesome numbers that pop up on the screen!", cardType: CardType.signing,),
-                const SizedBox(
-                  height: 20,
-                ),
-                const SignCard(practiceType: "Recognition", desc: "Identify those sneaky sign language numbers that are hiding on the screen", cardType: CardType.recognition,),
-              ],
-            ),
-          )
-        ],
+      backgroundColor: AppStyles.backgroundColor,
+      body: SafeArea(
+        child: Padding( 
+          padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 40),
+              Text("Master Your Signs", style: AppStyles.headLineStyle1),
+              const SizedBox(
+                height: 20,
+              ),
+              const SignCard(
+                practiceType: "Signing",
+                desc: "Boost your skills and have a blast by magically signing the awesome numbers that pop up on the screen!",
+                cardType: CardType.signing,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              const SignCard(
+                practiceType: "Recognition",
+                desc: "Identify those sneaky sign language numbers that are hiding on the screen",
+                cardType: CardType.recognition,
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
       ),
     );
   }
