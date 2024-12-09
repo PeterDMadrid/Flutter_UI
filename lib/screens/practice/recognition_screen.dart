@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
@@ -15,6 +14,7 @@ class RecognitionScreen extends StatefulWidget {
 class _RecognitionScreenState extends State<RecognitionScreen> {
   late RecognitionController _controller;
   OverlayEntry? _overlayEntry;
+  bool _isAnswerLocked = false;
 
   final String instructions = """1. Look at the number word on the screen (like "Three").
 
@@ -46,7 +46,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   void _handleAnswer(int selectedChoice) {
+    if (_isAnswerLocked) return;
+
     setState(() {
+      _isAnswerLocked = true;
       final isCorrect = _controller.checkAnswer(selectedChoice);
       
       // Show feedback (you can implement a better feedback UI)
@@ -65,6 +68,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           } else {
             _showResults();
           }
+           _isAnswerLocked = false;
         });
       });
     });
@@ -136,7 +140,9 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
               children: currentQuestion.choices.map((choice) {
                 return ChoiceCard(
                   choice: choice.toString(),
-                  onPressed: () => _handleAnswer(choice),
+                  onPressed: _isAnswerLocked
+                      ? () {}
+                      : () => _handleAnswer(choice),
                 );
               }).toList(),
             ),
