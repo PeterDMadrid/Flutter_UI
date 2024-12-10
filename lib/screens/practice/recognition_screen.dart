@@ -1,7 +1,8 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
+import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
+import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -11,7 +12,9 @@ class RecognitionScreen extends StatefulWidget {
 }
 
 class _RecognitionScreenState extends State<RecognitionScreen> {
+  late RecognitionController _controller;
   OverlayEntry? _overlayEntry;
+  bool _isAnswerLocked = false;
 
   final String instructions = """1. Look at the number word on the screen (like "Three").
 
@@ -19,35 +22,12 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
 3. Tap the hand sign that matches the number word!""";
 
-  int randomNumber = 0;
-  late List<int> choices;
-
   @override
   void initState() {
     super.initState();
-    _generateRandomNumberAndChoices();
+    _controller = RecognitionController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
-    });
-  }
-
-  void _generateRandomNumberAndChoices() {
-    setState(() {
-      randomNumber = Random().nextInt(10); // Generate random number (0-9)
-
-      // Generate 3 unique incorrect numbers
-      final random = Random();
-      final incorrectNumbers = <int>{};
-      while (incorrectNumbers.length < 3) {
-        int randomChoice = random.nextInt(10);
-        if (randomChoice != randomNumber) {
-          incorrectNumbers.add(randomChoice);
-        }
-      }
-
-      // Add the correct answer and shuffle
-      choices = [randomNumber, ...incorrectNumbers].toList();
-      choices.shuffle();
     });
   }
 
@@ -65,52 +45,109 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _checkAnswer(int selectedChoice) {
-    if (selectedChoice == randomNumber) {
-      print('Correct choice: $selectedChoice');
-    } else {
-      print('Incorrect choice: $selectedChoice');
-    }
+  void _handleAnswer(int selectedChoice) {
+    if (_isAnswerLocked) return;
+
+    setState(() {
+      _isAnswerLocked = true;
+      final isCorrect = _controller.checkAnswer(selectedChoice);
+      
+      // Show feedback (you can implement a better feedback UI)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+
+      // Wait for feedback before moving to next question
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          if (!_controller.isQuizFinished) {
+            _controller.nextQuestion();
+          } else {
+            _showResults();
+          }
+           _isAnswerLocked = false;
+        });
+      });
+    });
+  }
+
+  void _showResults() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Quiz Complete!'),
+        content: Text('Your score: ${_controller.score}/${RecognitionController.totalQuestions}'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Return to previous screen
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   void dispose() {
     _overlayEntry?.remove();
-    _overlayEntry = null;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    final currentQuestion = _controller.questions[_controller.currentQuestionIndex];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recognition Practice'),
+        backgroundColor: AppStyles.backgroundColor,
+        foregroundColor: AppStyles.textColor,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 45),
-          Center(
-            child: Text(
-              randomNumber.toString(), // Display the random number
-              style: const TextStyle(fontSize: 50),
+      body: Container(
+        decoration: BoxDecoration(color: AppStyles.backgroundColor),
+        height: screenHeight,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Question ${_controller.currentQuestionIndex + 1}/${RecognitionController.totalQuestions}',
+                style: AppStyles.headLineStyle2,
+              ),
             ),
-          ),
-          GridView.count(
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
-            crossAxisCount: 2,
-            childAspectRatio: 1,
-            padding: const EdgeInsets.all(60.0),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: choices.map((choice) {
-              return ChoiceCard(
-                choice: choice.toString(),
-                onPressed: () => _checkAnswer(choice), // Pass the logic here
-              );
-            }).toList(),
-          ),
-        ],
+            SizedBox(height: screenHeight * 0.1),
+            Center(
+              child: Text(
+                currentQuestion.correctNumber.toString(),
+                style: AppStyles.headLineStyle1.copyWith(fontSize: 80),
+              ),
+            ),
+            GridView.count(
+              crossAxisSpacing: 2.0,
+              mainAxisSpacing: 2.0,
+              crossAxisCount: 2,
+              childAspectRatio: 1,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: currentQuestion.choices.map((choice) {
+                return ChoiceCard(
+                  choice: choice.toString(),
+                  onPressed: _isAnswerLocked
+                      ? () {}
+                      : () => _handleAnswer(choice),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -13,10 +13,10 @@ class LessonScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: AppStyles.backgroundColor,
       body: ListView(
         children: [
           Container(
-            decoration: BoxDecoration(color: AppStyles.backgroundColor),
             height: screenHeight,
             padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
             child: Column(
