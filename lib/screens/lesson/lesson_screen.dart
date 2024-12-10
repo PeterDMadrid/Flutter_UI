@@ -7,7 +7,9 @@ import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/Introduction_screen.dart';
 
 class LessonScreen extends StatelessWidget {
-  const LessonScreen({super.key});
+  const LessonScreen({super.key, required this.name});
+
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class LessonScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const Introduction()),
+                          builder: (context) => Introduction(name: name,)),
                     );
                   },
                 ),

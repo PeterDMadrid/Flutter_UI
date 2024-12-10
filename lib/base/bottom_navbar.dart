@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/screens/lesson/lesson_screen.dart';
 import 'package:flutter_hands/screens/profile/profile_screen.dart';
@@ -52,7 +51,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     final appScreens = [
-      const LessonScreen(),
+      LessonScreen(name: username ?? "Guest",),
       const PracticeScreen(),
       const ChallengeScreen(),
       ProfileScreen(
