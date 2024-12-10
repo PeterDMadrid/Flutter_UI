@@ -17,7 +17,6 @@ class _IntroductionState extends State<Introduction> {
     const IntroText(text: "Hello there, %name%", isDynamic: true),
     const IntroText(text: "Let us teach you how to sign numbers 0 to 9"),
     const IntroText(text: "First, number one (1)"),
-    // Add more introduction texts here as needed
   ];
 
   int _currentTextIndex = 0;
@@ -30,7 +29,7 @@ class _IntroductionState extends State<Introduction> {
           _currentTextIndex++;
           _showContinue = false;
         } else {
-          // Handle final action or navigation
+          // Last action
         }
       });
     }
