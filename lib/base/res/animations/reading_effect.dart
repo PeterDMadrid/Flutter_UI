@@ -1,47 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class ReadingEffect extends StatefulWidget {
   const ReadingEffect({
     super.key,
     required this.text,
     this.style,
-    this.effect = AnimationEffect.fadeIn,
     this.onAnimationComplete,
+    this.animate = true,
   });
 
   final String text;
   final TextStyle? style;
-  final AnimationEffect effect;
   final VoidCallback? onAnimationComplete;
+  final bool animate;
 
   @override
   State<ReadingEffect> createState() => _ReadingEffectState();
 }
 
-class _ReadingEffectState extends State<ReadingEffect>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  bool _isComplete = false;
+class _ReadingEffectState extends State<ReadingEffect> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.effect == AnimationEffect.typewriter
-          ? Duration(milliseconds: 60 * widget.text.length)
-          : const Duration(milliseconds: 600),
+      duration: Duration(milliseconds: widget.animate ? 30 * widget.text.length : 0),
+    );
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.linear,
     );
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        setState(() => _isComplete = true);
         widget.onAnimationComplete?.call();
       }
     });
 
-    _controller.forward();
+    if (widget.animate) {
+      _controller.forward();
+    } else {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(ReadingEffect oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text || oldWidget.animate != widget.animate) {
+      _controller.duration = Duration(milliseconds: widget.animate ? 30 * widget.text.length : 0);
+      if (widget.animate) {
+        _controller.forward(from: 0);
+      } else {
+        _controller.value = 1.0;
+      }
+    }
   }
 
   @override
@@ -52,90 +69,19 @@ class _ReadingEffectState extends State<ReadingEffect>
 
   @override
   Widget build(BuildContext context) {
-    switch (widget.effect) {
-      case AnimationEffect.fadeIn:
-        return _buildFadeInText();
-      case AnimationEffect.typewriter:
-        return _buildTypewriterText();
-      case AnimationEffect.wave:
-        return _buildWaveText();
+    if (!widget.animate) {
+      return Text(widget.text, style: widget.style);
     }
-  }
 
-  Widget _buildFadeInText() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: widget.text.characters.map((char) {
-        return Animate(
-          controller: _controller,
-          effects: [
-            FadeEffect(duration: 400.ms, curve: Curves.easeInOut),
-            ScaleEffect(
-                begin: const Offset(0, 0),
-                end: const Offset(1.0, 1.0),
-                duration: 400.ms),
-            MoveEffect(
-              begin: const Offset(-20, 0),
-              end: Offset.zero,
-              duration: 400.ms,
-              curve: Curves.easeOutCubic,
-            ),
-          ],
-          delay: 100.ms * widget.text.indexOf(char),
-          child: Text(
-            char,
-            style: widget.style,
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildTypewriterText() {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _animation,
       builder: (context, child) {
-        final value = _controller.value;
+        final textLength = (widget.text.length * _animation.value).floor();
         return Text(
-          widget.text.substring(0, (widget.text.length * value).floor()),
+          widget.text.substring(0, textLength),
           style: widget.style,
         );
       },
     );
   }
-
-  Widget _buildWaveText() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: widget.text.characters.map((char) {
-        return Animate(
-          controller: _controller,
-          effects: [
-            FadeEffect(duration: 600.ms),
-            ScaleEffect(
-                begin: const Offset(0, 0),
-                end: const Offset(1.0, 1.0),
-                duration: 600.ms),
-            MoveEffect(
-              begin: const Offset(-20, 0),
-              end: Offset.zero,
-              duration: 600.ms,
-              curve: Curves.easeOutCubic,
-            ),
-          ],
-          delay: 80.ms * widget.text.indexOf(char),
-          child: Text(
-            char,
-            style: widget.style,
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-enum AnimationEffect {
-  fadeIn,
-  typewriter,
-  wave,
 }

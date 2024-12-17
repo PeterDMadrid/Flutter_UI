@@ -69,6 +69,8 @@ flutter:
     - assets/animations/splash_screen.json
     - assets/images/
     - assets/hands/
+    - assets/gif/
+    - assets/frame_display/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
