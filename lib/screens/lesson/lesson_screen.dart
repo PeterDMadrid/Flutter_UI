@@ -4,7 +4,7 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/screens/lesson/widgets/lesson_card.dart';
 import 'package:flutter_hands/screens/lesson/modules/examples_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
-import 'package:flutter_hands/screens/lesson/modules/Introduction_screen.dart';
+import 'package:flutter_hands/screens/lesson/modules/introduction/Introduction_screen.dart';
 
 class LessonScreen extends StatelessWidget {
   const LessonScreen({super.key, required this.name});
