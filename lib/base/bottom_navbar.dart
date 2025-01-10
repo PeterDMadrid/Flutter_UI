@@ -20,6 +20,7 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   String? username;
   String? profilePicture;
+  int scoreRecognition = 0;
   int currentLevel = 1;
   bool isLoading = false;
   var _selectedIndex = 0;
@@ -39,6 +40,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ? 'http://127.0.0.1:8000${userData['profile_picture']['image']}'
           : null;
       currentLevel = userData['level'];
+      scoreRecognition = userData['score'] != null ? userData['score']['recognition'] : 0;
+
+    print('----------------------------------');
+    print('Username: $username');
+    print('Profile Picture: $profilePicture');
+    print('Current Level: $currentLevel');
+    print('Score Recognition: $scoreRecognition');
+
     });
   }
 

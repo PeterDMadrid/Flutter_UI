@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/widgets/number_selection.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
 import 'package:flutter_hands/screens/lesson/widgets/gif_display.dart';
@@ -129,33 +130,6 @@ class _IntroductionState extends State<Introduction> {
     });
   }
 
-  String _getCurrentGif() {
-    switch (_currentNumber) {
-      case 1:
-        return AppMedia.gifZero;
-      case 2:
-        return AppMedia.gifOne;
-      case 3:
-        return AppMedia.gifTwo;
-      case 4:
-        return AppMedia.gifThree;
-      case 5:
-        return AppMedia.gifFour;
-      case 6:
-        return AppMedia.gifFive;
-      case 7:
-        return AppMedia.gifSix;
-      case 8:
-        return AppMedia.gifSeven;
-      case 9:
-        return AppMedia.gifEight;
-      case 10:
-        return AppMedia.gifNine;
-      default:
-        return AppMedia.gifZero;
-    }
-  }
-
   String _processText(String text) {
     return text.replaceAll('%name%', widget.name);
   }
@@ -168,13 +142,14 @@ class _IntroductionState extends State<Introduction> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       backgroundColor: AppStyles.backgroundColor,
-      body: GestureDetector(
-        onTap: _handleTap,
-        behavior: HitTestBehavior.opaque,
-        child: SafeArea(
-          child: Stack(
-            children: [
-              ListView(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          GestureDetector(
+            onTap: _handleTap,
+            behavior: HitTestBehavior.opaque,
+            child: SafeArea(
+              child: ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
                   ...List.generate(_currentTextIndex + 1, (i) {
@@ -197,7 +172,7 @@ class _IntroductionState extends State<Introduction> {
                   if (_showGif) ...[
                     const SizedBox(height: 20),
                     GifDisplay(
-                      gifPath: _getCurrentGif(),
+                      gifPath: AppMedia.handGif[_currentNumber - 1],
                       staticFramePath: AppMedia.handFrames[_currentNumber - 1],
                       onGifDisplayed: () {
                         Future.delayed(
@@ -208,11 +183,34 @@ class _IntroductionState extends State<Introduction> {
                     ),
                   ],
                   if (_showContinue) const PulsingEffect(),
+                  const SizedBox(height: 80), // Space for button
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            left: 16,
+            bottom: 16,
+            child: NumberSelection(onNumberSelected: (number) {
+              setState(() {
+                _currentNumber = number + 1;
+                int sequenceIndex = number;
+                _currentTextIndex = 0;
+                _showGif = false;
+                _showContinue = false;
+
+                if (_numberSequences[sequenceIndex].length >= 3) {
+                  _currentTexts = _numberSequences[sequenceIndex].sublist(1, 3);
+                } else if (_numberSequences[sequenceIndex].length == 2) {
+                  _currentTexts = _numberSequences[sequenceIndex].sublist(1, 2);
+                } else {
+                  _currentTexts =
+                      [];
+                }
+              });
+            }),
+          ),
+        ],
       ),
     );
   }

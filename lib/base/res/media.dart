@@ -36,6 +36,19 @@ class AppMedia {
   '$_baseMediaForFrames/frame9.png',
 ];
 
+static const List<String> handGif = [
+  '$_baseMediaForGif/gif_zero.gif',
+  '$_baseMediaForGif/gif_one.gif',
+  '$_baseMediaForGif/gif_two.gif',
+  '$_baseMediaForGif/gif_three.gif',
+  '$_baseMediaForGif/gif_four.gif',
+  '$_baseMediaForGif/gif_five.gif',
+  '$_baseMediaForGif/gif_six.gif',
+  '$_baseMediaForGif/gif_seven.gif',
+  '$_baseMediaForGif/gif_eight.gif',
+  '$_baseMediaForGif/gif_nine.gif',
+];
+
 static const gifZero = '$_baseMediaForGif/gif_zero.gif';
 static const gifOne = '$_baseMediaForGif/gif_one.gif';
 static const gifTwo = '$_baseMediaForGif/gif_two.gif';
