@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'dart:convert';
 import '../../main.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
@@ -23,6 +26,12 @@ class _SigningScreenState extends State<SigningScreen>
   bool _isInitialized = false;
   late SigningController _signingController;
 
+  bool _isProcessing = false;
+  int _prediction = -1;
+  String _label = '';
+  String _handedness = '';
+  double _confidence = 0.0;
+
   final String instructions =
       """1. Look at the number word on the screen (like "Three").
 2. Use your hand to sign the number in front of the camera.
@@ -37,6 +46,59 @@ class _SigningScreenState extends State<SigningScreen>
       _showInstructions();
     });
     _signingController = SigningController();
+  }
+
+  Future<void> _captureAndPredict() async {
+    if (_isProcessing ||
+        _cameraController == null ||
+        !_cameraController!.value.isInitialized) {
+      return;
+    }
+
+    try {
+      setState(() {
+        _isProcessing = true;
+      });
+
+      final XFile image = await _cameraController!.takePicture();
+
+      final prediction = await _sendImageToAPI(File(image.path));
+
+      setState(() {
+        _prediction = prediction['prediction'] ?? 401;
+        _label = prediction['label'] ?? 'Unknown';
+        _confidence = prediction['confidence']?.toDouble() ?? 0.0;
+        _handedness = prediction['handedness'] ?? 'Unknown';
+      });
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>> _sendImageToAPI(File imageFile) async {
+    // Replace with your Django API endpoint
+    const String apiUrl = 'http://YourIPAddress:8000/api/predict/';
+
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+      ));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to predict: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: ${e.toString()}');
+    }
   }
 
   Future<void> _initializeCamera() async {
@@ -179,7 +241,7 @@ class _SigningScreenState extends State<SigningScreen>
                       'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
                       style: AppStyles.headLineStyle2),
                 ),
-                SizedBox(height: screenHeight * 0.025),
+                SizedBox(height: screenHeight * 0.010),
                 Center(
                     child: Text(
                   currentQuestion.correctNumber.toString(),
@@ -196,10 +258,56 @@ class _SigningScreenState extends State<SigningScreen>
                     ),
                   ),
                 ),
+                if (_label.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Gesture: $_prediction',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Text(
+                            'Confidence: ${(_confidence * 100).toStringAsFixed(1)}%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            'Hand: $_handedness',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
 
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: FloatingActionButton(
+              onPressed: _isProcessing ? null : _captureAndPredict,
+              child: _isProcessing
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Icon(Icons.camera),
+            ),
+          ),
           // Camera Switch Button
           Positioned(
             bottom: 20,
