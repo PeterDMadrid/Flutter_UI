@@ -70,6 +70,11 @@ class _SigningScreenState extends State<SigningScreen>
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
       });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleAnswer(_prediction);
+    });
+
     } catch (e) {
       setState(() {
         _isProcessing = false;
@@ -180,6 +185,52 @@ class _SigningScreenState extends State<SigningScreen>
 
     Overlay.of(context).insert(_overlayEntry!);
   }
+
+  void _handleAnswer(int handSign) {
+    setState(() {
+      final isCorrect = _signingController.checkAnswer(handSign);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        if(!_signingController.isQuizFinished) {
+          _isProcessing = false;
+          _signingController.nextQuestion();
+        } else {
+          _showResults();
+        }
+      });
+    });
+
+    });
+  }
+
+  void _showResults() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Quiz Complete!'),
+        content: Text('Your score: ${_signingController.score}/${SigningController.totalQuestions}'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Return to previous screen
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -308,6 +359,7 @@ class _SigningScreenState extends State<SigningScreen>
                   : const Icon(Icons.camera),
             ),
           ),
+          
           // Camera Switch Button
           Positioned(
             bottom: 20,

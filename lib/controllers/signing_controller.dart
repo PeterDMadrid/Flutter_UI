@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_hands/models/signing_model.dart';
 
 class SigningController {
@@ -18,6 +19,28 @@ class SigningController {
     final correctNumber = allNumbers[i];
 
     questions.add(SigningModel(correctNumber: correctNumber));
+    }
+  }
+
+  bool checkAnswer(int handSign) {
+    final currentQuestion = questions[currentQuestionIndex];
+    final isCorrect = handSign == currentQuestion.correctNumber;
+
+    if (isCorrect) {
+      score++;
+    }
+
+    questions[currentQuestionIndex] = currentQuestion.copyWith(
+      isCorrect: isCorrect,
+    );
+    return isCorrect;
+  }
+
+  bool get isQuizFinished => currentQuestionIndex >= totalQuestions - 1;
+
+  void nextQuestion() {
+    if (!isQuizFinished) {
+      currentQuestionIndex++;
     }
   }
 }
