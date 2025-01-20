@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/splash_screen.dart';
 import 'package:flutter_hands/base/bottom_navbar.dart';
@@ -6,7 +7,19 @@ import 'package:flutter_hands/screens/auth/login_screen.dart';
 import 'package:flutter_hands/screens/practice/signing_screen.dart';
 import 'package:flutter_hands/screens/practice/recognition_screen.dart';
 
-void main() {
+// Declare as global variable
+late List<CameraDescription> globalCameras;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    globalCameras = await availableCameras();
+  } catch (e) {
+    debugPrint('Error initializing cameras: $e');
+    globalCameras = [];
+  }
+
   runApp(const MyApp());
 }
 
@@ -22,14 +35,13 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins'
       ),
       routes: {
-        "/" : (context) => const SplashScreen(),
+        "/": (context) => const SplashScreen(),
         "/login": (context) => const LoginScreen(),
-        "/signing_screen" : (context) => const SigningScreen(),
-        "/recognition_screen" : (context) => const RecognitionScreen(),
+        "/signing_screen": (context) => const SigningScreen(),
+        "/recognition_screen": (context) => const RecognitionScreen(),
         "/bottom_navbar": (context) => const BottomNavBar(),
         "/auth_check": (context) => const CheckAuth()
       }
     );
   }
 }
- 

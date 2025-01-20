@@ -18,7 +18,7 @@ class RecognitionController {
       final correctNumber = allNumbers[i];
 
       final incorrectNumbers = allNumbers
-          .where((num) => num != correctNumber)
+          .where((number) => number != correctNumber)
           .take(3)
           .toList()
         ..shuffle();
