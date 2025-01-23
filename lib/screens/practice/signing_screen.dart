@@ -196,6 +196,10 @@ class _SigningScreenState extends State<SigningScreen>
         SnackBar(
           content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
           duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: isCorrect?Colors.teal : Colors.red  ,
+          margin: const EdgeInsets.all(50),
+          elevation: 30,
         ),
       );
 
