@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 
 class ProfileSelection extends StatelessWidget {
   final double profileImageSize;
@@ -49,7 +50,7 @@ class ProfileSelection extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.network(
-                            'http://127.0.0.1:8000/media/profile${profile['profilePictureId']}.jpg',
+                            'http://${GlobalVariables.server}/media/profile${profile['profilePictureId']}.jpg',
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(

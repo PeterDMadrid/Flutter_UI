@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
+
 
 // Import the global cameras variable
 
@@ -84,7 +86,7 @@ class _SigningScreenState extends State<SigningScreen>
 
   Future<Map<String, dynamic>> _sendImageToAPI(File imageFile) async {
     // Replace with your Django API endpoint
-    const String apiUrl = 'http://YourIPAddress:8000/api/predict/';
+    String apiUrl = 'http://${GlobalVariables.server}/api/predict/';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
