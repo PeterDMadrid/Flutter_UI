@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 
 class AuthService {
-  static const _baseUrl = 'http://127.0.0.1:8000/api/auth';
+  static String _baseUrl = 'http://${GlobalVariables.server}/api/auth';
   static const _storage = FlutterSecureStorage();
 
   // Store both token and user data

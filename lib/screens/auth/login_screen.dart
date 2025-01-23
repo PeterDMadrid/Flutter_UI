@@ -5,6 +5,7 @@ import 'package:flutter_hands/base/bottom_navbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/auth/widgets/profile_creation';
 import 'package:flutter_hands/screens/auth/widgets/profile_selection.dart';
 
@@ -66,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> fetchProfilePictures() async {
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/auth/profile-pictures/'),
+        Uri.parse('http://${GlobalVariables.server}/api/auth/profile-pictures/'),
       );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -74,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
           profilePictures = data.map((e) => {
             "id": e['id'],
             "name": e['name'],
-            "image": 'http://127.0.0.1:8000${e['image']}',
+            "image": 'http://${GlobalVariables.server}${e['image']}',
           }).toList();
         });
       }

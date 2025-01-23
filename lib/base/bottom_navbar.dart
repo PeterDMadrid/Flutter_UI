@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/screens/lesson/lesson_screen.dart';
 import 'package:flutter_hands/screens/profile/profile_screen.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/practice/practice_screen.dart';
 import 'package:flutter_hands/screens/challenge/challenge_screen.dart';
 
@@ -37,7 +38,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     setState(() {
       username = userData['username'];
       profilePicture = userData['profile_picture'] != null
-          ? 'http://127.0.0.1:8000${userData['profile_picture']['image']}'
+          ? 'http://${GlobalVariables.server}${userData['profile_picture']['image']}'
           : null;
       currentLevel = userData['level'];
       scoreRecognition = userData['score'] != null ? userData['score']['recognition'] : 0;

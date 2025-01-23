@@ -9,6 +9,7 @@ import 'package:flutter_hands/screens/practice/recognition_screen.dart';
 
 // Declare as global variable
 late List<CameraDescription> globalCameras;
+String baseUrl = "192.168.1.10:8000";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
