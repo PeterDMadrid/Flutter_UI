@@ -8,7 +8,7 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
-
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 // Import the global cameras variable
 
@@ -33,6 +33,9 @@ class _SigningScreenState extends State<SigningScreen>
   String _label = '';
   String _handedness = '';
   double _confidence = 0.0;
+
+  bool _hasHand = false;
+  bool _isDetecting = false;
 
   final String instructions =
       """1. Look at the number word on the screen (like "Three").
@@ -72,11 +75,9 @@ class _SigningScreenState extends State<SigningScreen>
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
       });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _handleAnswer(_prediction);
-    });
-
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleAnswer(_prediction);
+      });
     } catch (e) {
       setState(() {
         _isProcessing = false;
@@ -122,12 +123,18 @@ class _SigningScreenState extends State<SigningScreen>
     // Create new controller
     final controller = CameraController(
       globalCameras[_isFrontCamera && globalCameras.length > 1 ? 0 : 1],
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.high,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.nv21,
     );
 
     try {
       await controller.initialize();
+      await controller.startImageStream((CameraImage image) {
+        if (DateTime.now().millisecondsSinceEpoch % 5 == 0) {
+          _detectHands(image);
+        }
+      });
 
       if (mounted) {
         setState(() {
@@ -143,6 +150,75 @@ class _SigningScreenState extends State<SigningScreen>
       });
     }
   }
+
+  Future<void> _detectHands(CameraImage cameraImage) async {
+  if (_isDetecting) return;
+  _isDetecting = true;
+
+  try {
+    final inputImage = InputImage.fromBytes(
+      bytes: cameraImage.planes[0].bytes!,
+      metadata: InputImageMetadata(
+        size: Size(cameraImage.width.toDouble(), cameraImage.height.toDouble()),
+        rotation: InputImageRotation.rotation0deg,
+        format: InputImageFormat.nv21,
+        bytesPerRow: cameraImage.planes[0].bytesPerRow,
+      ),
+    );
+
+    final poseDetector = PoseDetector(
+      options: PoseDetectorOptions(
+        model: PoseDetectionModel.base,
+        mode: PoseDetectionMode.stream,
+      ),
+    );
+
+    final List<Pose> poses = await poseDetector.processImage(inputImage);
+
+    bool handDetected = poses.any((pose) {
+      final landmarks = pose.landmarks;
+      
+      final handLandmarks = [
+        PoseLandmarkType.leftWrist,
+        PoseLandmarkType.rightWrist,
+        PoseLandmarkType.leftPinky,
+        PoseLandmarkType.rightPinky,
+        PoseLandmarkType.leftIndex,
+        PoseLandmarkType.rightIndex,
+        PoseLandmarkType.leftThumb,
+        PoseLandmarkType.rightThumb,
+      ];
+
+      // Count confident hand landmarks
+      final confidentHandLandmarks = handLandmarks.where((type) {
+        final landmark = landmarks[type];
+        return landmark != null && landmark.likelihood > 0.4;
+      }).toList();
+
+      // More robust hand detection
+      return confidentHandLandmarks.length >= 2;
+    });
+
+    if (mounted) {
+      setState(() {
+        _hasHand = handDetected;
+      });
+
+      print('Hand Detection Result: $handDetected');
+    }
+
+    await poseDetector.close();
+  } catch (e) {
+    print('Hand Detection Error: $e');
+    if (mounted) {
+      setState(() {
+        _hasHand = false;
+      });
+    }
+  } finally {
+    _isDetecting = false;
+  }
+}
 
   @override
   void dispose() {
@@ -199,17 +275,16 @@ class _SigningScreenState extends State<SigningScreen>
         ),
       );
 
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        if(!_signingController.isQuizFinished) {
-          _isProcessing = false;
-          _signingController.nextQuestion();
-        } else {
-          _showResults();
-        }
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          if (!_signingController.isQuizFinished) {
+            _isProcessing = false;
+            _signingController.nextQuestion();
+          } else {
+            _showResults();
+          }
+        });
       });
-    });
-
     });
   }
 
@@ -219,7 +294,8 @@ class _SigningScreenState extends State<SigningScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Quiz Complete!'),
-        content: Text('Your score: ${_signingController.score}/${SigningController.totalQuestions}'),
+        content: Text(
+            'Your score: ${_signingController.score}/${SigningController.totalQuestions}'),
         actions: [
           TextButton(
             onPressed: () {
@@ -232,7 +308,6 @@ class _SigningScreenState extends State<SigningScreen>
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -290,9 +365,20 @@ class _SigningScreenState extends State<SigningScreen>
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                      'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
-                      style: AppStyles.headLineStyle2),
+                  child: Column(
+                    children: [
+                      Text(
+                          'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
+                          style: AppStyles.headLineStyle2),
+                      Text(
+                        _hasHand ? 'Hand Detected ✋' : 'No Hands Detected',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: screenHeight * 0.010),
                 Center(
@@ -302,12 +388,14 @@ class _SigningScreenState extends State<SigningScreen>
                 )),
                 SizedBox(height: screenHeight * 0.025),
                 Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.6,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 64.0), // Margin around the preview
                     child: AspectRatio(
-                      aspectRatio: _cameraController!.value.aspectRatio,
-                      child: CameraPreview(_cameraController!),
+                      aspectRatio: 2 / 3, // Camera's native aspect ratio
+                      child: ClipRect(
+                        child: CameraPreview(_cameraController!),
+                      ),
                     ),
                   ),
                 ),
@@ -343,6 +431,13 @@ class _SigningScreenState extends State<SigningScreen>
                               fontSize: 14,
                             ),
                           ),
+                          Text(
+                            _hasHand ? 'Hand Detected ✋' : 'No Hands Detected',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -361,7 +456,7 @@ class _SigningScreenState extends State<SigningScreen>
                   : const Icon(Icons.camera),
             ),
           ),
-          
+
           // Camera Switch Button
           Positioned(
             bottom: 20,
