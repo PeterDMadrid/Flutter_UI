@@ -1,3 +1,4 @@
+import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/screens/auth/check_auth.dart';
@@ -24,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppStyles.backgroundColor,
       body: Center(
         child: Lottie.asset(
           'assets/animations/splash_screen.json',
