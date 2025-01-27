@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
 class ProfileCreation extends StatelessWidget {
   final TextEditingController usernameController;
@@ -35,10 +36,10 @@ class ProfileCreation extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: TextField(
               controller: usernameController,
-              style: TextStyle(color: const Color.fromARGB(255, 81, 81, 81), fontSize: fontSize),
+              style: AppStyles.paragraph1,
               decoration: InputDecoration(
                 labelText: 'Enter username',
-                labelStyle: TextStyle(color: const Color.fromARGB(255, 50, 50, 50), fontSize: fontSize),
+                labelStyle: AppStyles.paragraph2,
                 enabledBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey),
                 ),
@@ -102,9 +103,16 @@ class ProfileCreation extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onCreateProfile,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: AppStyles.buttonColor, // Set the background color
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                      ),
                     ),
-                    child: const Text('Create Profile'),
+                    child: const Text(
+                      'Create Profile',
+                      style: TextStyle(color: Colors.white), // Set text color
+                    ),
                   ),
                 ),
                 SizedBox(width: screenWidth * 0.04),
@@ -112,9 +120,16 @@ class ProfileCreation extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onCancel,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: AppStyles.buttonColor, // Set the background color
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                      ),
                     ),
-                    child: const Text('Cancel'),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.white), // Set text color
+                    ),
                   ),
                 ),
               ],
