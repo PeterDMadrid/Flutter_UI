@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import '../../main.dart';
 import 'package:camera/camera.dart';
@@ -8,7 +9,9 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
-
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
+import 'package:flutter_hands/screens/practice/widgets/rectangular_progress_border_painter.dart';
 
 // Import the global cameras variable
 
@@ -33,6 +36,15 @@ class _SigningScreenState extends State<SigningScreen>
   String _label = '';
   String _handedness = '';
   double _confidence = 0.0;
+
+  bool _hasHand = false;
+  bool _isDetecting = false;
+
+  //FOR CIRCULAR PROGRESS
+  double _progress = 0.0;
+  Timer? _progressTimer;
+  bool _isProgressVisible = false;
+  final int totalDurationInSeconds = 3;
 
   final String instructions =
       """1. Look at the number word on the screen (like "Three").
@@ -72,11 +84,9 @@ class _SigningScreenState extends State<SigningScreen>
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
       });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _handleAnswer(_prediction);
-    });
-
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleAnswer(_prediction);
+      });
     } catch (e) {
       setState(() {
         _isProcessing = false;
@@ -122,12 +132,18 @@ class _SigningScreenState extends State<SigningScreen>
     // Create new controller
     final controller = CameraController(
       globalCameras[_isFrontCamera && globalCameras.length > 1 ? 0 : 1],
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.ultraHigh,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.nv21,
     );
 
     try {
       await controller.initialize();
+      await controller.startImageStream((CameraImage image) {
+        if (DateTime.now().millisecondsSinceEpoch % 2 == 0) {
+          _detectHands(image);
+        }
+      });
 
       if (mounted) {
         setState(() {
@@ -142,6 +158,138 @@ class _SigningScreenState extends State<SigningScreen>
         _isInitialized = false;
       });
     }
+  }
+
+  final handDetectionSmoother = HandDetectionSmoother(windowSize: 5);
+
+  Future<void> _detectHands(CameraImage cameraImage) async {
+    if (_isDetecting) return;
+    _isDetecting = true;
+
+    try {
+      // Create InputImage from CameraImage
+      final inputImage = _createInputImage(cameraImage);
+
+      // Initialize PoseDetector
+      final poseDetector = PoseDetector(
+        options: PoseDetectorOptions(
+          model: PoseDetectionModel.base,
+          mode: PoseDetectionMode.stream,
+        ),
+      );
+
+      // Process the image and detect poses
+      final List<Pose> poses = await poseDetector.processImage(inputImage);
+
+      // Check for hands in the detected poses
+      final bool handDetected = _checkForHands(poses);
+
+      // Update the state with smoothed detection result
+      if (mounted) {
+        setState(() {
+          _hasHand = handDetectionSmoother.smoothDetection(handDetected);
+        });
+        print('Hand Detection Result: $_hasHand');
+
+        // Handle progress based on hand detection
+        if (_hasHand && !_isProcessing) {
+          _startProgress(); // Start or continue progress
+        } else {
+          _cancelProgress(); // Cancel progress if no hand is detected
+        }
+      }
+
+      // Close the pose detector
+      await poseDetector.close();
+    } catch (e) {
+      print('Hand Detection Error: $e');
+      if (mounted) {
+        setState(() {
+          _hasHand = false;
+          _cancelProgress(); // Cancel progress on error
+        });
+      }
+    } finally {
+      _isDetecting = false;
+    }
+  }
+
+  void _startProgress() {
+    if (_progressTimer != null && _progressTimer!.isActive) return;
+
+    setState(() {
+      _progress = 0.0;
+      _isProgressVisible = true;
+    });
+
+    const int timerIntervalInMilliseconds = 30;
+    final int totalSteps =
+        (totalDurationInSeconds * 1000) ~/ timerIntervalInMilliseconds;
+    final double increment = 1.0 / totalSteps;
+
+    _progressTimer = Timer.periodic(
+        Duration(milliseconds: timerIntervalInMilliseconds), (timer) {
+      if (mounted) {
+        setState(() {
+          _progress += increment;
+          if (_progress >= 1.0) {
+            _progressTimer?.cancel();
+            _isProgressVisible = false;
+            _captureAndPredict();
+            print("finished");
+          }
+        });
+      }
+    });
+  }
+
+  void _cancelProgress() {
+    // Cancel the timer and reset progress
+    _progressTimer?.cancel();
+    setState(() {
+      _progress = 0.0;
+      _isProgressVisible = false;
+    });
+  }
+
+// Create InputImage from CameraImage
+  InputImage _createInputImage(CameraImage cameraImage) {
+    return InputImage.fromBytes(
+      bytes: cameraImage.planes[0].bytes,
+      metadata: InputImageMetadata(
+        size: Size(cameraImage.width.toDouble(), cameraImage.height.toDouble()),
+        rotation: InputImageRotation.rotation0deg,
+        format: InputImageFormat.nv21,
+        bytesPerRow: cameraImage.planes[0].bytesPerRow,
+      ),
+    );
+  }
+
+// Check for hands in the detected poses
+  bool _checkForHands(List<Pose> poses) {
+    const handLandmarks = [
+      PoseLandmarkType.leftWrist,
+      PoseLandmarkType.rightWrist,
+      PoseLandmarkType.leftPinky,
+      PoseLandmarkType.rightPinky,
+      PoseLandmarkType.leftIndex,
+      PoseLandmarkType.rightIndex,
+      PoseLandmarkType.leftThumb,
+      PoseLandmarkType.rightThumb,
+    ];
+
+    return poses.any((pose) {
+      final landmarks = pose.landmarks;
+
+      // Count confident hand landmarks
+      final confidentHandLandmarks = handLandmarks.where((type) {
+        final landmark = landmarks[type];
+        return landmark != null && landmark.likelihood > 0.1;
+      }).toList();
+
+      // Require at least 2 confident landmarks to detect a hand
+      return confidentHandLandmarks.length >= 2;
+    });
   }
 
   @override
@@ -203,17 +351,16 @@ class _SigningScreenState extends State<SigningScreen>
         ),
       );
 
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        if(!_signingController.isQuizFinished) {
-          _isProcessing = false;
-          _signingController.nextQuestion();
-        } else {
-          _showResults();
-        }
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          if (!_signingController.isQuizFinished) {
+            _isProcessing = false;
+            _signingController.nextQuestion();
+          } else {
+            _showResults();
+          }
+        });
       });
-    });
-
     });
   }
 
@@ -223,12 +370,13 @@ class _SigningScreenState extends State<SigningScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Quiz Complete!'),
-        content: Text('Your score: ${_signingController.score}/${SigningController.totalQuestions}'),
+        content: Text(
+            'Your score: ${_signingController.score}/${SigningController.totalQuestions}'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Return to previous screen
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text('Done'),
           ),
@@ -236,7 +384,6 @@ class _SigningScreenState extends State<SigningScreen>
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -294,9 +441,20 @@ class _SigningScreenState extends State<SigningScreen>
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                      'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
-                      style: AppStyles.headLineStyle2),
+                  child: Column(
+                    children: [
+                      Text(
+                          'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
+                          style: AppStyles.headLineStyle2),
+                      Text(
+                        _hasHand ? 'Hand Detected ✋' : 'No Hands Detected',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: screenHeight * 0.010),
                 Center(
@@ -305,56 +463,34 @@ class _SigningScreenState extends State<SigningScreen>
                   style: AppStyles.headLineStyle1.copyWith(fontSize: 80),
                 )),
                 SizedBox(height: screenHeight * 0.025),
-                Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.6,
-                    child: AspectRatio(
-                      aspectRatio: _cameraController!.value.aspectRatio,
-                      child: CameraPreview(_cameraController!),
-                    ),
-                  ),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Camera preview
+                    _buildCameraPreview(),
+
+                    // CustomPaint to draw the rectangular progress border
+                    if (_isProgressVisible)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 64.0),
+                        child: AspectRatio(
+                          aspectRatio: 2 / 3,
+                          child: CustomPaint(
+                            size: Size.infinite,
+                            painter: RectangularProgressBorderPainter(
+                              progress: _progress,
+                              strokeWidth: 6.0,
+                              color: const Color.fromARGB(255, 55, 151, 59),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                if (_label.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(4.0),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Gesture: $_prediction',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            'Confidence: ${(_confidence * 100).toStringAsFixed(1)}%',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            'Hand: $_handedness',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                if (_label.isNotEmpty) _buildPredictionResult(),
               ],
             ),
           ),
-
           Positioned(
             bottom: 20,
             left: 20,
@@ -365,8 +501,6 @@ class _SigningScreenState extends State<SigningScreen>
                   : const Icon(Icons.camera),
             ),
           ),
-          
-          // Camera Switch Button
           Positioned(
             bottom: 20,
             right: 20,
@@ -376,6 +510,63 @@ class _SigningScreenState extends State<SigningScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCameraPreview() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 64.0),
+      child: AspectRatio(
+        aspectRatio: 2 / 3,
+        child: ClipRect(
+          child: CameraPreview(_cameraController!),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPredictionResult() {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Container(
+        padding: const EdgeInsets.all(4.0),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Gesture: $_prediction',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Confidence: ${(_confidence * 100).toStringAsFixed(1)}%',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              'Hand: $_handedness',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              _hasHand ? 'Hand Detected ✋' : 'No Hands Detected',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
