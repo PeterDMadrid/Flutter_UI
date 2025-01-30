@@ -255,7 +255,7 @@ class _SigningScreenState extends State<SigningScreen>
 // Create InputImage from CameraImage
   InputImage _createInputImage(CameraImage cameraImage) {
     return InputImage.fromBytes(
-      bytes: cameraImage.planes[0].bytes!,
+      bytes: cameraImage.planes[0].bytes,
       metadata: InputImageMetadata(
         size: Size(cameraImage.width.toDouble(), cameraImage.height.toDouble()),
         rotation: InputImageRotation.rotation0deg,
