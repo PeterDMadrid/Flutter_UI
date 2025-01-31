@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_hands/services/auth_service.dart';
-
 import '../../main.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
@@ -372,34 +371,43 @@ class _SigningScreenState extends State<SigningScreen>
   }
 
   Future<void> _sendScoreToAPI(int score) async {
-    String apiUrl = 'http://${GlobalVariables.server}/save_score/'; // Replace with your actual endpoint
-    final userData = await AuthService.getUserData(); 
-
     try {
+      // Comprehensive logging
+      print('Attempting to send score: $score');
+
+      final userData = await AuthService.getUserData();
+      final token = await AuthService.getToken();
+
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse('http://${GlobalVariables.server}/api/auth/save_score/'),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Token $token',
         },
         body: json.encode({
-          'username': userData?['username'], // Replace with the actual username or user ID
+          'username': userData?['username'],
           'signing_score': score,
         }),
       );
 
+
       if (response.statusCode == 200) {
-        print('Score saved successfully: ${response.body}');
+        print('Score saved successfully');
       } else {
-        throw Exception('Failed to save score: ${response.statusCode}');
+        print('Failed to save score');
+        throw Exception('Score save failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error saving score: $e');
+      // Detailed error logging
+      print('Complete Error Details:');
+      print('Error Type: ${e.runtimeType}');
+      print('Error Message: $e');
     }
   }
 
   void _showResults() {
     // Send the signing score to the backend
-    _sendScoreToAPI(_signingScore);
+    _sendScoreToAPI(_signingController.score);
 
     showDialog(
       context: context,
