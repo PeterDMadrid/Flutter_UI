@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_hands/services/auth_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../../main.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +48,9 @@ class _SigningScreenState extends State<SigningScreen>
   Timer? _progressTimer;
   bool _isProgressVisible = false;
   final int totalDurationInSeconds = 3;
+
+  int _signingScore = 0;
+  static const _storage = FlutterSecureStorage();
 
   final String instructions =
       """1. Look at the number word on the screen (like "Three").
@@ -339,13 +345,16 @@ class _SigningScreenState extends State<SigningScreen>
   void _handleAnswer(int handSign) {
     setState(() {
       final isCorrect = _signingController.checkAnswer(handSign);
+      if (isCorrect) {
+        _signingScore++; // Increment the signing score if the answer is correct
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
           duration: const Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: isCorrect?Colors.teal : Colors.red  ,
+          backgroundColor: isCorrect ? Colors.teal : Colors.red,
           margin: const EdgeInsets.all(50),
           elevation: 30,
         ),
@@ -364,7 +373,41 @@ class _SigningScreenState extends State<SigningScreen>
     });
   }
 
+  static Future<String?> getToken() async {
+    return await _storage.read(key: 'token');
+  }
+
+  Future<void> _sendScoreToAPI(int score) async {
+    String apiUrl = 'http://${GlobalVariables.server}/api/auth/save_score/'; // Replace with your actual endpoint
+    final userData = await AuthService.getUserData(); 
+    final token =  await getToken();
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token',
+        },
+        body: json.encode({
+          'username': userData?['username'], // Replace with the actual username or user ID
+          'signing_score': score,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Score saved successfully: ${response.body}');
+      } else {
+        throw Exception('Failed to save score: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error saving score: $e');
+    }
+  }
+
   void _showResults() {
+    // Send the signing score to the backend
+    _sendScoreToAPI(_signingScore);
+
     showDialog(
       context: context,
       barrierDismissible: false,
