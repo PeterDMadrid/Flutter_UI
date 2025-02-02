@@ -3,7 +3,7 @@ import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/start_button.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 
-enum CardType { recognition, signing, challenge }
+enum CardType { recognition, signing, challenge ,test }
 
 class SignCard extends StatelessWidget {
   const SignCard({
@@ -42,6 +42,12 @@ class SignCard extends StatelessWidget {
         endColor = AppStyles.roseRed.withOpacity(0.6);
         backgroundImage = AppMedia.challengeBackground;
         route = "/challenge_screen";
+        break;
+      case CardType.test:
+      startColor = AppStyles.roseRed;
+      endColor = AppStyles.roseRed.withOpacity(0.6);
+      backgroundImage = AppMedia.challengeBackground;
+      route = "/Test_screen";
         break;
     }
 

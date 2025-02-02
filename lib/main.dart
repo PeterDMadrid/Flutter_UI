@@ -6,7 +6,7 @@ import 'package:flutter_hands/screens/auth/check_auth.dart';
 import 'package:flutter_hands/screens/auth/login_screen.dart';
 import 'package:flutter_hands/screens/practice/signing_screen.dart';
 import 'package:flutter_hands/screens/practice/recognition_screen.dart';
-
+import 'package:flutter_hands/screens/practice/Test_screen.dart';
 // Declare as global variable
 late List<CameraDescription> globalCameras;
 String baseUrl = "192.168.1.10:8000";
@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
         "/login": (context) => const LoginScreen(),
         "/signing_screen": (context) => const SigningScreen(),
         "/recognition_screen": (context) => const RecognitionScreen(),
+        "/Test_screen": (context) => const AdditionSigningScreen(),
         "/bottom_navbar": (context) => const BottomNavBar(),
         "/auth_check": (context) => const CheckAuth()
       }

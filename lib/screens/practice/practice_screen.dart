@@ -34,6 +34,14 @@ class PracticeScreen extends StatelessWidget {
                   desc: "Identify those sneaky sign language numbers that are hiding on the screen",
                   cardType: CardType.recognition,
                 ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const SignCard(
+                  practiceType: "Test",
+                  desc: "Identify those sneaky sign language numbers that are hiding on the screen",
+                  cardType: CardType.test,
+                ),
                 const SizedBox(height: 20), 
               ],
             ),
