@@ -119,7 +119,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                       children: [
                         Gif(
                           image: AssetImage(
-                              AppMedia.handGif[int.parse(numberString[0])]),
+                              AppMedia.twoDigits[int.parse(numberString[0])]),
                           autostart: Autostart.once,
                           controller: _gifController,
                         ),
@@ -127,12 +127,12 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                         Text(numberString[0], style: AppStyles.headLineStyle2,),
                       ],
                     )
-                  else if (currentGif == 1)
+                  else if (currentGif == 1 || numberString[0] == numberString[1])
                     Column(
                       children: [
                         Gif(
                           image: AssetImage(
-                              AppMedia.handGif[int.parse(numberString[1])]),
+                              AppMedia.twoDigits[int.parse(numberString[1])]),
                           autostart: Autostart.once,
                           controller: _gifController,
                         ),
