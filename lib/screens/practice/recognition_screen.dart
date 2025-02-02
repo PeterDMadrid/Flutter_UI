@@ -79,24 +79,35 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   void _showResults() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Quiz Complete!'),
-        content: Text('Your score: ${_controller.score}/${RecognitionController.totalQuestions}'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Return to previous screen
-            },
-            child: const Text('Done'),
-          ),
-        ],
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      backgroundColor: AppStyles.backgroundColor, // Set background color
+      title: Text(
+        'Quiz Complete!',
+        style: AppStyles.headLineStyle2, // Use headline style for title
       ),
-    );
-  }
+      content: Text(
+        'Your score: ${_controller.score}/${RecognitionController.totalQuestions}',
+        style: AppStyles.paragraph1, // Use paragraph style for content
+        textAlign: TextAlign.center, // Center align the text
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Close dialog
+            Navigator.pop(context); // Return to previous screen
+          },
+          child: Text(
+            'Done',
+            style: AppStyles.headLineStyle1.copyWith(color: AppStyles.buttonColor), // Style the button text
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   void dispose() {
