@@ -405,28 +405,38 @@ class _SigningScreenState extends State<SigningScreen>
   }
 
   void _showResults() {
-    // Send the signing score to the backend
-    _sendScoreToAPI(_signingScore);
+  // Send the signing score to the backend
+  _sendScoreToAPI(_signingScore);
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Quiz Complete!'),
-        content: Text(
-            'Your score: ${_signingController.score}/${SigningController.totalQuestions}'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Done'),
-          ),
-        ],
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      backgroundColor: AppStyles.backgroundColor, 
+      title: Text(
+        'Quiz Complete!',
+        style: AppStyles.headLineStyle2, 
       ),
-    );
-  }
+      content: Text(
+        'Your score: $_signingScore/${SigningController.totalQuestions}',
+        style: AppStyles.paragraph1, 
+        textAlign: TextAlign.center, 
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); 
+            Navigator.pop(context); 
+          },
+          child: Text(
+            'Done',
+            style: AppStyles.headLineStyle1.copyWith(color: AppStyles.buttonColor),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
