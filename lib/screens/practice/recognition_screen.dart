@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
+import 'package:flutter_hands/services/auth_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -16,10 +21,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   OverlayEntry? _overlayEntry;
   bool _isAnswerLocked = false;
 
+  static const _storage = FlutterSecureStorage();
+
   final String instructions = """1. Look at the number word on the screen (like "Three").
-
 2. Find the matching hand sign for the number word in the pictures.
-
 3. Tap the hand sign that matches the number word!""";
 
   @override
@@ -58,7 +63,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
           duration: const Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: isCorrect?Colors.teal : Colors.red  ,
+          backgroundColor: isCorrect ? Colors.teal : Colors.red,
           margin: const EdgeInsets.all(50),
           elevation: 30,
         ),
@@ -72,42 +77,77 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           } else {
             _showResults();
           }
-           _isAnswerLocked = false;
+          _isAnswerLocked = false;
         });
       });
     });
   }
 
-  void _showResults() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => AlertDialog(
-      backgroundColor: AppStyles.backgroundColor, // Set background color
-      title: Text(
-        'Quiz Complete!',
-        style: AppStyles.headLineStyle2, // Use headline style for title
-      ),
-      content: Text(
-        'Your score: ${_controller.score}/${RecognitionController.totalQuestions}',
-        style: AppStyles.paragraph1, // Use paragraph style for content
-        textAlign: TextAlign.center, // Center align the text
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // Close dialog
-            Navigator.pop(context); // Return to previous screen
-          },
-          child: Text(
-            'Done',
-            style: AppStyles.headLineStyle1.copyWith(color: AppStyles.buttonColor), // Style the button text
-          ),
+  static Future<String?> getToken() async {
+    return await _storage.read(key: 'token');
+  }
+
+  void _showResults() async {
+    // Send the recognition score to the backend
+    await _sendRecognitionScoreToAPI(_controller.score);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppStyles.backgroundColor,
+        title: Text(
+          'Quiz Complete!',
+          style: AppStyles.headLineStyle2,
         ),
-      ],
-    ),
-  );
-}
+        content: Text(
+          'Your score: ${_controller.score}/${RecognitionController.totalQuestions}',
+          style: AppStyles.paragraph1,
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Done',
+              style: AppStyles.headLineStyle1.copyWith(color: AppStyles.buttonColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendRecognitionScoreToAPI(int score) async {
+    String apiUrl = 'http://${GlobalVariables.server}/api/auth/save_recognition_score/'; // Replace with your actual endpoint
+    final token = await getToken(); // Assuming you have a method to get the token
+    final userData = await AuthService.getUserData(); 
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token',
+        },
+        body: json.encode({
+          'username': userData?['username'], // Replace with the actual username or user ID
+          'recognition_score': score,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Recognition score saved successfully: ${response.body}');
+      } else {
+        throw Exception('Failed to save recognition score: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error saving recognition score: $e');
+    }
+  }
 
   @override
   void dispose() {
