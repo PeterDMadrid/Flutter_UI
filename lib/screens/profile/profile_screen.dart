@@ -9,13 +9,13 @@ class ProfileScreen extends StatelessWidget {
   final String? profilePicture;
 
   const ProfileScreen({
-    super.key, 
-    required this.name, 
-    required this.level, 
-    required this.profilePicture
+    super.key,
+    required this.name,
+    required this.level,
+    required this.profilePicture,
   });
 
-  Future<void> logoutUser(BuildContext context) async {
+  Future<void> logoutUser (BuildContext context) async {
     try {
       final success = await AuthService.logout();
       if (success) {
@@ -66,47 +66,176 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(color: AppStyles.backgroundColor),
-        height: screenHeight,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Stack(
-            children: [
-              Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    const SizedBox(height: 20),
-                    buildProfileImage(),
-                    const SizedBox(height: 16),
-                    Text(
-                      name,
-                      style: AppStyles.headLineStyle1,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Level $level",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: AppStyles.lavender,
+      body: SafeArea( // Wrap the body with SafeArea
+        child: Container(
+          decoration: BoxDecoration(color: AppStyles.backgroundColor),
+          height: screenHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      const SizedBox(height: 20),
+                      // Center the Row containing the profile image
+                      buildProfileImage(),
+                      const SizedBox(height: 16),
+                      const SizedBox(height: 16),
+                      Text(
+                        name,
+                        style: AppStyles.headLineStyle1,
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.logout_outlined),
-                      onPressed: () => logoutUser(context),
-                    )
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        "Level $level",
+                        style: AppStyles.headLineStyle1.copyWith(
+                          fontSize: 24, // Make the font size larger
+                          color: AppStyles.khaki, // Use yellow color from app styles
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Scores Table
+                      Table(
+                        border: const TableBorder(
+                          top: BorderSide(color: Colors.white),
+                          bottom: BorderSide(color: Colors.white),
+                          left: BorderSide(color: Colors.white),
+                          right: BorderSide(color: Colors.white),
+                          horizontalInside: BorderSide(color: Colors.white),
+                          verticalInside: BorderSide(color: Colors.white),
+                        ),
+                        columnWidths: const {
+                          0: FlexColumnWidth(2),
+                          1: FlexColumnWidth(1),
+                        },
+                        children: [
+                          TableRow(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(
+                                    'Quiz',
+                                    style: AppStyles.headLineStyle2.copyWith(color: Colors.white, fontSize: 24),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(
+                                    'Scores',
+                                    style: AppStyles.headLineStyle2.copyWith(color: Colors.white, fontSize: 24),
+                                  ),
+                                ),
+                              ), // Empty cell for alignment
+                            ],
+                          ),
+                          const TableRow(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Recognition Practice', style: TextStyle(color: Colors.white, fontSize: 18)),
+                              ),
+                              Center( // Center the score in the cell
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('1', style: TextStyle(color: Colors.white, fontSize: 18)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const TableRow(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Signing Practice', style: TextStyle(color: Colors.white, fontSize: 18)),
+                              ),
+                              Center( // Center the score in the cell
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('1', style: TextStyle(color: Colors.white, fontSize: 18)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const TableRow(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Recognition Challenge', style: TextStyle(color: Colors.white, fontSize: 18)),
+                              ),
+                              Center( // Center the score in the cell
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('1', style: TextStyle(color: Colors.white, fontSize: 18)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const TableRow(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Signing Challenge', style: TextStyle(color: Colors.white, fontSize: 18)),
+                              ),
+                              Center( // Center the score in the cell
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('1', style: TextStyle(color: Colors.white, fontSize: 18)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const TableRow(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Total Progress', style: TextStyle(color: Colors.white, fontSize: 18)),
+                              ),
+                              Center( // Center the score in the cell
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('5%', style: TextStyle(color: Colors.white, fontSize: 18)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-              Positioned(
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {},
+                Positioned(
+                  right: 0,
+                  child: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Colors.white), // Set icon color to white
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        // Implement edit functionality here
+                      } else if (value == 'logout') {
+                        logoutUser (context);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return [
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: Text('Edit Profile', style: TextStyle(color: Colors.black)), // Change color as needed
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'logout',
+                          child: Text('Logout', style: TextStyle(color: Colors.black)), // Change color as needed
+                        ),
+                      ];
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
