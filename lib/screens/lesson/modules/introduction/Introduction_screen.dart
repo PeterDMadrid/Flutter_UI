@@ -138,6 +138,7 @@ class _IntroductionState extends State<Introduction> {
                             ? AppStyles.headLineStyle2
                             : AppStyles.headLineStyle2
                                 .copyWith(color: Colors.white54),
+                        speed: 30,
                         animate: isCurrentText,
                         onAnimationComplete: isCurrentText
                             ? () => setState(() => _controller.state.showContinue = true)

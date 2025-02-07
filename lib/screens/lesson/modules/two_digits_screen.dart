@@ -1,11 +1,11 @@
 import 'dart:math';
+import 'dart:async';
 import 'package:gif/gif.dart';
 import '../widgets/intro_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
-import 'package:flutter_hands/screens/lesson/widgets/gif_display.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
 
@@ -18,13 +18,18 @@ class TwoDigitsScreen extends StatefulWidget {
 
 class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     with TickerProviderStateMixin {
-  late int currentGif;
-  final Random random = Random();
-  late int twoDigitNumber;
-  late String numberString = twoDigitNumber.toString();
+  // Constants
+  static const double _defaultPadding = 16.0;
+  static const double _gifSpacing = 35.0;
+  static const double _digitSpacing = 5.0;
+  static const int _animationSpeed = 30;
+
+  // State variables
+  int _currentGif = 0;
+  String _numberString;
 
   late final LessonController _controller;
-  late GifController _gifController;
+  late final GifController _gifController;
 
   final List<List<IntroText>> _numberSequences = [
     [
@@ -36,45 +41,114 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     ],
   ];
 
-  int generateTwoDigitNumber() {
-    return 10 + random.nextInt(90);
-  }
-
-  void _restartGif() {
-    setState(() {
-      currentGif = 0;
-      _gifController.reset();
-    });
-  }
-
-  String _processText(String text) {
-    return text.replaceAll('%twodigitnumber%', numberString);
-  }
+  _TwoDigitsScreenState()
+      : _numberString = (10 + Random().nextInt(90)).toString();
 
   @override
   void initState() {
     super.initState();
 
-    twoDigitNumber = generateTwoDigitNumber();
     _controller = LessonController(
       setState: setState,
       numberSequences: _numberSequences,
+      onLastContinueTapped: () {
+        generateNumber(); // This will generate a new number and update the state
+      },
     );
 
     _gifController = GifController(vsync: this);
-    _gifController.addListener(() {
-      if (_gifController.isCompleted) {
-        setState(() {
-          if (currentGif < 1) {
-            currentGif++;
-          } else {
-            _restartGif();
-          }
-        });
-      }
-    });
+    _gifController.addListener(_handleGifCompletion);
+  }
 
-    currentGif = 0;
+  @override
+  void dispose() {
+    _gifController.removeListener(_handleGifCompletion);
+    _gifController.dispose();
+    super.dispose();
+  }
+
+  void generateNumber() {
+    setState(() {
+      int num;
+      do {
+        num = 10 + Random().nextInt(90);
+      } while (num % 11 == 0);
+
+      _numberString = num.toString();
+    });
+  }
+
+  void _handleGifCompletion() {
+    if (_numberString[0] == _numberString[1]) {
+      _controller.state.showContinue = true;
+    } else if (_gifController.isCompleted) {
+      setState(() {
+        if (_currentGif < 1) {
+          _currentGif++;
+          _gifController.reset();
+        } else {
+          _restartGif();
+          _controller.state.showContinue = true;
+        }
+      });
+    }
+  }
+
+  void _restartGif() {
+    setState(() {
+      _currentGif = 0;
+      _gifController.reset();
+    });
+  }
+
+  String _processText(String text) {
+    return text.replaceAll('%twodigitnumber%', _numberString);
+  }
+
+  Widget _buildGifDisplay(String digit, bool isFirstDigit) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Gif(
+          image: AssetImage(AppMedia.twoDigits[int.parse(digit)]),
+          autostart: isFirstDigit && digit == _numberString[1]
+              ? Autostart.loop
+              : Autostart.once,
+          controller: _gifController,
+        ),
+        const SizedBox(height: _digitSpacing),
+        Text(
+          isFirstDigit ? digit : _numberString,
+          style: AppStyles.headLineStyle2,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextSequence() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(
+        _controller.state.currentTextIndex + 1,
+        (i) {
+          final isCurrentText = i == _controller.state.currentTextIndex;
+          return Padding(
+            padding: EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
+            child: ReadingEffect(
+              text: _processText(_controller.state.currentTexts[i].text),
+              style: isCurrentText
+                  ? AppStyles.headLineStyle2
+                  : AppStyles.headLineStyle2.copyWith(color: Colors.white54),
+              speed: _animationSpeed,
+              animate: isCurrentText,
+              onAnimationComplete: isCurrentText
+                  ? () => setState(() => _controller.state.showContinue = true)
+                  : null,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -85,68 +159,31 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       backgroundColor: AppStyles.backgroundColor,
-      body: Stack(fit: StackFit.expand, children: [
-        GestureDetector(
-          onTap: _controller.handleTap,
-          behavior: HitTestBehavior.opaque,
-          child: SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                ...List.generate(_controller.state.currentTextIndex + 1, (i) {
-                  final isCurrentText = i == _controller.state.currentTextIndex;
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
-                    child: ReadingEffect(
-                      text:
-                          _processText(_controller.state.currentTexts[i].text),
-                      style: isCurrentText
-                          ? AppStyles.headLineStyle2
-                          : AppStyles.headLineStyle2
-                              .copyWith(color: Colors.white54),
-                      animate: isCurrentText,
-                      onAnimationComplete: isCurrentText
-                          ? () => setState(
-                              () => _controller.state.showContinue = true)
-                          : null,
-                    ),
-                  );
-                }),
-                if (_controller.state.showGif) ...[
-                  const SizedBox(height: 35),
-                  if (currentGif == 0)
-                    Column(
-                      children: [
-                        Gif(
-                          image: AssetImage(
-                              AppMedia.twoDigits[int.parse(numberString[0])]),
-                          autostart: Autostart.once,
-                          controller: _gifController,
-                        ),
-                        const SizedBox(height: 5,),
-                        Text(numberString[0], style: AppStyles.headLineStyle2,),
-                      ],
-                    )
-                  else if (currentGif == 1 || numberString[0] == numberString[1])
-                    Column(
-                      children: [
-                        Gif(
-                          image: AssetImage(
-                              AppMedia.twoDigits[int.parse(numberString[1])]),
-                          autostart: Autostart.once,
-                          controller: _gifController,
-                        ),
-                        const SizedBox(height: 5),
-                        Text(numberString[0]+numberString[1], style: AppStyles.headLineStyle2,),
-                      ],
-                    ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          GestureDetector(
+            onTap: _controller.handleTap,
+            behavior: HitTestBehavior.opaque,
+            child: SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(_defaultPadding),
+                children: [
+                  _buildTextSequence(),
+                  if (_controller.state.showGif) ...[
+                    const SizedBox(height: _gifSpacing),
+                    if (_currentGif == 0)
+                      _buildGifDisplay(_numberString[0], true)
+                    else if (_currentGif == 1)
+                      _buildGifDisplay(_numberString[1], false),
+                  ],
+                  if (_controller.state.showContinue) const PulsingEffect(),
                 ],
-                if (_controller.state.showContinue) const PulsingEffect(),
-              ],
+              ),
             ),
           ),
-        )
-      ]),
+        ],
+      ),
     );
   }
 }
