@@ -36,6 +36,7 @@ dependencies:
   flutter_secure_storage: ^7.0.0
   shared_preferences: ^2.3.3
   camera: ^0.10.5+9
+  gif: ^2.3.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -73,6 +74,7 @@ flutter:
     - assets/hands/
     - assets/gif/
     - assets/frame_display/
+    - assets/two_digits/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -4,12 +4,14 @@ class ReadingEffect extends StatefulWidget {
   const ReadingEffect({
     super.key,
     required this.text,
+    required this.speed,
     this.style,
     this.onAnimationComplete,
     this.animate = true,
   });
 
   final String text;
+  final int speed;
   final TextStyle? style;
   final VoidCallback? onAnimationComplete;
   final bool animate;
@@ -27,7 +29,7 @@ class _ReadingEffectState extends State<ReadingEffect> with SingleTickerProvider
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: widget.animate ? 30 * widget.text.length : 0),
+      duration: Duration(milliseconds: widget.animate ? widget.speed * widget.text.length : 0),
     );
 
     _animation = CurvedAnimation(
@@ -52,7 +54,7 @@ class _ReadingEffectState extends State<ReadingEffect> with SingleTickerProvider
   void didUpdateWidget(ReadingEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.text != widget.text || oldWidget.animate != widget.animate) {
-      _controller.duration = Duration(milliseconds: widget.animate ? 30 * widget.text.length : 0);
+      _controller.duration = Duration(milliseconds: widget.animate ? widget.speed * widget.text.length : 0);
       if (widget.animate) {
         _controller.forward(from: 0);
       } else {
