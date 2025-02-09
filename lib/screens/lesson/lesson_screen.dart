@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/screens/lesson/widgets/lesson_card.dart';
-import 'package:flutter_hands/screens/lesson/modules/examples_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
+import 'package:flutter_hands/screens/lesson/modules/math_lesson_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/introduction/Introduction_screen.dart';
 
 class LessonScreen extends StatelessWidget {
@@ -60,14 +60,14 @@ class LessonScreen extends StatelessWidget {
                   height: 20,
                 ),
                 LessonCard(
-                  lessonTitle: "Examples",
-                  lessonSubtitle: "Numbers 1-99",
+                  lessonTitle: "Math Lessons",
+                  lessonSubtitle: "Introducing Operations",
                   lessonIcon: AppMedia.practiceRecognitionBackground,
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const ExamplesScreen()),
+                          builder: (context) => const MathLessonScreen()),
                     );
                   },
                 ),
