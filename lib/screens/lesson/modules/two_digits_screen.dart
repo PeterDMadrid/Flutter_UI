@@ -8,6 +8,7 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
+import 'package:flutter_hands/screens/lesson/widgets/digit_animation.dart';
 
 class TwoDigitsScreen extends StatefulWidget {
   const TwoDigitsScreen({super.key});
@@ -27,6 +28,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   // State variables
   int _currentGif = 0;
   String _numberString;
+  bool _isResetting = false;
 
   late final LessonController _controller;
   late final GifController _gifController;
@@ -75,10 +77,22 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
       } while (num % 11 == 0);
 
       _numberString = num.toString();
+      _currentGif = 0;
+      _gifController.reset();
+      
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          setState(() {
+            _isResetting = false;
+          });
+        }
+      });
     });
   }
 
   void _handleGifCompletion() {
+    if (_isResetting) return;
+
     if (_numberString[0] == _numberString[1]) {
       _controller.state.showContinue = true;
     } else if (_gifController.isCompleted) {
@@ -95,6 +109,8 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   }
 
   void _restartGif() {
+    if (_isResetting) return;
+    
     setState(() {
       _currentGif = 0;
       _gifController.reset();
@@ -106,6 +122,8 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   }
 
   Widget _buildGifDisplay(String digit, bool isFirstDigit) {
+    if (_isResetting) return const SizedBox.shrink();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -117,10 +135,6 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
           controller: _gifController,
         ),
         const SizedBox(height: _digitSpacing),
-        Text(
-          isFirstDigit ? digit : _numberString,
-          style: AppStyles.headLineStyle2,
-        ),
       ],
     );
   }
@@ -176,6 +190,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                       _buildGifDisplay(_numberString[0], true)
                     else if (_currentGif == 1)
                       _buildGifDisplay(_numberString[1], false),
+                    DigitAnimation(text: _numberString, speed: 3000, style: AppStyles.headLineStyle2.copyWith(fontSize: 64)),
                   ],
                   if (_controller.state.showContinue) const PulsingEffect(),
                 ],
