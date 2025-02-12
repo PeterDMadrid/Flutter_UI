@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/start_button.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 
 enum CardType { recognition, signing, challenge }
+
+enum Difficulty { easy, medium, hard }
 
 class SignCard extends StatelessWidget {
   const SignCard({
@@ -41,7 +44,7 @@ class SignCard extends StatelessWidget {
         startColor = AppStyles.roseRed;
         endColor = AppStyles.roseRed.withOpacity(0.6);
         backgroundImage = AppMedia.challengeBackground;
-        route = "/challenge_screen";
+        route = "/basic_flow_widget";
         break;
     }
 
@@ -93,11 +96,47 @@ class SignCard extends StatelessWidget {
             const SizedBox(
               height: 35,
             ),
-            Center(
-              child: StartButton(
-                onTap: () => Navigator.pushNamed(context, route),
+            if (cardType == CardType.challenge)
+              Column(
+                children: [
+                  StartButton(
+                      text: "Easy",
+                      color: Colors.green[600],
+                      onTap: () => showDialog(
+                            context: context,
+                            builder: (context) => const MathModeDialog(
+                              difficulty: Difficulty.easy,
+                            ),
+                          )),
+                  const SizedBox(height: 16),
+                  StartButton(
+                      text: "Medium",
+                      color: Colors.orange[600],
+                      onTap: () => showDialog(
+                            context: context,
+                            builder: (context) => const MathModeDialog(
+                              difficulty: Difficulty.medium,
+                            ),
+                          )),
+                  const SizedBox(height: 16),
+                  StartButton(
+                      text: "Hard",
+                      color: Colors.red[600],
+                      onTap: () => showDialog(
+                            context: context,
+                            builder: (context) => const MathModeDialog(
+                              difficulty: Difficulty.hard,
+                            ),
+                          )),
+                ],
+              )
+            else
+              Center(
+                child: StartButton(
+                  text: "START",
+                  onTap: () => Navigator.pushNamed(context, route),
+                ),
               ),
-            ),
           ],
         ),
       ),

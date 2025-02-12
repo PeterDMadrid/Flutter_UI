@@ -29,8 +29,6 @@ class _MathLessonScreenState extends State<MathLessonScreen>
   late final LessonController _controller;
   late final GifController _firstGifController;
   late final GifController _secondGifController;
-  late final GifController _thirdGifController;
-  late final GifController _fourthGifController;
 
   @override
   void initState() {
@@ -119,7 +117,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     }
   }
 
-  Widget _buildGifDisplayForAddition(String digit) {
+  Widget _buildGifDisplayForAddition() {
     double gifSize =
         MediaQuery.of(context).size.width * 0.35; // 35% of screen width
 
@@ -210,7 +208,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
               if (_controller.state.showGif)
                 SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: Center(child: _buildGifDisplayForAddition(digits))),
+                    child: Center(child: _buildGifDisplayForAddition())),
               if (_controller.state.showContinue) const PulsingEffect(),
             ],
           )),
