@@ -6,9 +6,10 @@ class ChallengeScreen extends StatelessWidget {
   const ChallengeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { 
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: AppStyles.backgroundColor,
       body: ListView(
         children: [
           Container(
