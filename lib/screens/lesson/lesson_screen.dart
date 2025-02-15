@@ -6,10 +6,20 @@ import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/math_lesson_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/introduction/Introduction_screen.dart';
 
-class LessonScreen extends StatelessWidget {
+class LessonScreen extends StatefulWidget {
   const LessonScreen({super.key, required this.name});
-
   final String name;
+
+  @override
+  State<LessonScreen> createState() => _LessonScreenState();
+}
+
+class _LessonScreenState extends State<LessonScreen> {
+  @override
+  void initState() {
+    super.initState();
+    print("hello");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +40,7 @@ class LessonScreen extends StatelessWidget {
                   height: 20,
                 ),
                 LessonCard(
+                  index: 0,
                   lessonTitle: "Introduction",
                   lessonSubtitle: "Numbers 0-9",
                   lessonIcon: AppMedia.practiceRecognitionBackground,
@@ -37,7 +48,9 @@ class LessonScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => Introduction(name: name,)),
+                          builder: (context) => Introduction(
+                                name: widget.name,
+                              )),
                     );
                   },
                 ),
@@ -45,6 +58,7 @@ class LessonScreen extends StatelessWidget {
                   height: 20,
                 ),
                 LessonCard(
+                  index: 1,
                   lessonTitle: "Two Digits",
                   lessonSubtitle: "Numbers 10-99",
                   lessonIcon: AppMedia.practiceRecognitionBackground,
@@ -60,6 +74,7 @@ class LessonScreen extends StatelessWidget {
                   height: 20,
                 ),
                 LessonCard(
+                  index: 2,
                   lessonTitle: "Math Lessons",
                   lessonSubtitle: "Introducing Operations",
                   lessonIcon: AppMedia.practiceRecognitionBackground,
