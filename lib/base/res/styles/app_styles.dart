@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class AppStyles {
   static Color textColor = const Color(0xFFC6C6C6);
@@ -24,4 +25,73 @@ class AppStyles {
 
   static TextStyle paragraph2 =
       TextStyle(fontSize: 16, color: textColor, height: 1.5);
+
+  static Duration getStaggeredDelay(int index,
+      {Duration baseDelay = const Duration(milliseconds: 100)}) {
+    return baseDelay * index;
+  }
+
+  static const Duration defaultAnimationDuration = Duration(milliseconds: 400);
+  static const Curve defaultAnimationCurve = Curves.easeOutCubic;
+
+  // Reusable animation effects
+  static List<Effect> cardEntranceEffects({
+    Duration duration = defaultAnimationDuration,
+    double slideDistance = 30.0,
+    double scaleStart = 0.95,
+    double blurStart = 8.0,
+  }) =>
+      [
+        ScaleEffect(
+          begin: Offset(scaleStart, scaleStart),
+          end: const Offset(1, 1),
+          duration: duration,
+          curve: defaultAnimationCurve,
+        ),
+        MoveEffect(
+          begin: Offset(0.0, slideDistance),
+          end: const Offset(0.0, 0.0),
+          duration: duration,
+          curve: defaultAnimationCurve,
+        ),
+        FadeEffect(
+          begin: 0.0,
+          end: 1.0,
+          duration: duration,
+          curve: Curves.easeOut,
+        ),
+        CustomEffect(
+          begin: blurStart,
+          end: 0.0,
+          duration: duration,
+          curve: defaultAnimationCurve,
+          builder: (context, value, child) {
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: child,
+            );
+          },
+        ),
+      ];
+
+  static List<Effect> cardEntranceEffects2({
+    Duration duration = defaultAnimationDuration,
+    double slideDistance = 50.0,
+  }) =>
+      [
+        MoveEffect(
+          begin: Offset(slideDistance, 0.0), // Slide from right
+          end: const Offset(0.0, 0.0),
+          duration: duration,
+          curve: Curves.easeOutQuart, // Slightly different curve for variety
+        ),
+        FadeEffect(
+          begin: 0.0,
+          end: 1.0,
+          duration: duration,
+          curve: Curves.easeOut,
+        ),
+      ];
 }

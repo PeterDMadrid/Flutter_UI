@@ -22,6 +22,7 @@ class PracticeScreen extends StatelessWidget {
                   height: 20,
                 ),
                 const SignCard(
+                  index: 0,
                   practiceType: "Signing",
                   desc: "Boost your skills and have a blast by magically signing the awesome numbers that pop up on the screen!",
                   cardType: CardType.signing,
@@ -30,6 +31,7 @@ class PracticeScreen extends StatelessWidget {
                   height: 20,
                 ),
                 const SignCard(
+                  index: 1,
                   practiceType: "Recognition",
                   desc: "Identify those sneaky sign language numbers that are hiding on the screen",
                   cardType: CardType.recognition,

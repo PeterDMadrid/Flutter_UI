@@ -11,11 +11,7 @@ import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
-import 'package:flutter_hands/screens/practice/widgets/rectangular_progress_border_painter.dart';
-
-// Import the global cameras variable
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
