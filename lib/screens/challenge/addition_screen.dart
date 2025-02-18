@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_hands/main.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/controllers/addition_controller.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
+import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
+import 'package:flutter_hands/screens/challenge/widgets/answer_display.dart';
 
 class AdditionScreen extends StatefulWidget {
   const AdditionScreen({super.key});
@@ -27,7 +30,7 @@ class _AdditionScreenState extends State<AdditionScreen> {
   String _errorMessage = '';
   bool _isInitialized = false;
 
-  late List<int> currentAnswer = [0, 0];
+  late List<int> currentAnswer = [];
   bool _isProcessing = false;
   int _prediction = -1;
   String _label = ''; //remove when deploying
@@ -70,7 +73,8 @@ class _AdditionScreenState extends State<AdditionScreen> {
       });
       final XFile image = await _cameraController!.takePicture();
 
-      final prediction = await _sendImageToAPI(File(image.path));
+      final prediction =
+          await ImagePredictionService.sendImageToAPI(File(image.path));
 
       setState(() {
         _prediction = prediction['prediction'] ?? 401;
@@ -88,14 +92,14 @@ class _AdditionScreenState extends State<AdditionScreen> {
 
           if (expectedLength == 1) {
             // For single-digit answers (easy mode)
-            currentAnswer[0] = _prediction;
+            currentAnswer.add(_prediction);
             _handleAnswer([currentAnswer[0]]); // Send only the first digit
           } else {
             // For double-digit answers (medium/hard mode)
-            if (currentAnswer[0] == 0) {
-              currentAnswer[0] = _prediction;
-            } else if (currentAnswer[1] == 0) {
-              currentAnswer[1] = _prediction;
+            if (currentAnswer.isEmpty) {
+              currentAnswer.add(_prediction);
+            } else if (currentAnswer.length == 1) {
+              currentAnswer.add(_prediction);
               _handleAnswer(currentAnswer);
             }
           }
@@ -109,29 +113,6 @@ class _AdditionScreenState extends State<AdditionScreen> {
       setState(() {
         _isProcessing = false;
       });
-    }
-  }
-
-  Future<Map<String, dynamic>> _sendImageToAPI(File imageFile) async {
-    String apiUrl = 'http://${GlobalVariables.server}/api/predict/';
-
-    try {
-      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-      request.files.add(await http.MultipartFile.fromPath(
-        'image',
-        imageFile.path,
-      ));
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Failed to predict: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: ${e.toString()}');
     }
   }
 
@@ -157,11 +138,17 @@ class _AdditionScreenState extends State<AdditionScreen> {
         if (!_additionController.isQuizFinished) {
           _isProcessing = false;
           _additionController.nextQuestion();
-          currentAnswer = [0, 0];
+          currentAnswer.clear();
         } else {
           _showResults();
         }
       });
+    });
+  }
+
+  void _clearAnswer() {
+    setState(() {
+      currentAnswer.clear();
     });
   }
 
@@ -173,10 +160,8 @@ class _AdditionScreenState extends State<AdditionScreen> {
       return;
     }
 
-    // Dispose of previous controller if it exists
     await _cameraController?.dispose();
 
-    // Create new controller
     final controller = CameraController(
       globalCameras[_isFrontCamera && globalCameras.length > 1 ? 0 : 1],
       ResolutionPreset.ultraHigh,
@@ -214,36 +199,36 @@ class _AdditionScreenState extends State<AdditionScreen> {
   }
 
   void _showResults() {
-
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => AlertDialog(
-      backgroundColor: AppStyles.backgroundColor, 
-      title: Text(
-        'Quiz Complete!',
-        style: AppStyles.headLineStyle2, 
-      ),
-      content: Text(
-        'Your score: $_additionScore/${_additionController.totalQuestions}',
-        style: AppStyles.paragraph1, 
-        textAlign: TextAlign.center, 
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); 
-            Navigator.pop(context); 
-          },
-          child: Text(
-            'Done',
-            style: AppStyles.headLineStyle1.copyWith(color: AppStyles.buttonColor),
-          ),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppStyles.backgroundColor,
+        title: Text(
+          'Quiz Complete!',
+          style: AppStyles.headLineStyle2,
         ),
-      ],
-    ),
-  );
-}
+        content: Text(
+          'Your score: $_additionScore/${_additionController.totalQuestions}',
+          style: AppStyles.paragraph1,
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Done',
+              style: AppStyles.headLineStyle1
+                  .copyWith(color: AppStyles.buttonColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showInstructions() {
     _overlayEntry = OverlayEntry(
@@ -338,41 +323,28 @@ class _AdditionScreenState extends State<AdditionScreen> {
                 SizedBox(height: screenHeight * 0.025),
                 _buildCameraPreview(),
                 SizedBox(height: screenHeight * 0.025),
-                // In your build method:
-                Text(
-                  expectedLength == 1
-                      ? (currentAnswer[0] == 0
-                          ? '_'
-                          : currentAnswer[0].toString())
-                      : (currentAnswer[0] == 0
-                              ? '_'
-                              : currentAnswer[0].toString()) +
-                          (currentAnswer[1] == 0
-                              ? '_'
-                              : currentAnswer[1].toString()),
-                  style: AppStyles.headLineStyle2,
+                AnswerDisplay(
+                  currentAnswer: currentAnswer,
+                  expectedLength: expectedLength,
                 ),
               ],
             ),
           ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: FloatingActionButton(
-              onPressed: _isProcessing ? null : _captureAndPredict,
-              child: _isProcessing
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Icon(Icons.camera),
-            ),
+          CameraControls(
+            onCapture: _isProcessing ? () {} : _captureAndPredict,
+            onToggleCamera: _toggleCamera,
+            isProcessing: _isProcessing,
           ),
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: FloatingActionButton(
-              onPressed: _toggleCamera,
-              child: const Icon(Icons.flip_camera_ios),
-            ),
-          ),
+          if (currentAnswer.isNotEmpty)
+            Positioned(
+                bottom: 30,
+                right: 40,
+                child: FloatingActionButton(
+                  backgroundColor: AppStyles.backgroundColor,
+                  foregroundColor: AppStyles.textColor,
+                  onPressed: currentAnswer.isNotEmpty ? _clearAnswer : null,
+                  child: const Icon(Icons.backspace_sharp),
+                ))
         ],
       ),
     );

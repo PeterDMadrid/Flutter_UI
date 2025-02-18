@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
+
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -352,13 +354,6 @@ class _SigningScreenState extends State<SigningScreen>
                       Text(
                           'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
                           style: AppStyles.headLineStyle2),
-                      // Text(
-                      //   _hasHand ? 'Hand Detected ✋' : 'No Hands Detected',
-                      //   style: const TextStyle(
-                      //     color: Colors.white,
-                      //     fontSize: 14,
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
@@ -374,23 +369,10 @@ class _SigningScreenState extends State<SigningScreen>
               ],
             ),
           ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: FloatingActionButton(
-              onPressed: _isProcessing ? null : _captureAndPredict,
-              child: _isProcessing
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Icon(Icons.camera),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: FloatingActionButton(
-              onPressed: _toggleCamera,
-              child: const Icon(Icons.flip_camera_ios),
-            ),
+          CameraControls(
+            onCapture: _isProcessing ? () {} : _captureAndPredict,
+            onToggleCamera: _toggleCamera,
+            isProcessing: _isProcessing,
           ),
         ],
       ),
@@ -404,45 +386,6 @@ class _SigningScreenState extends State<SigningScreen>
         aspectRatio: 2 / 3,
         child: ClipRect(
           child: CameraPreview(_cameraController!),
-        ),
-      ),
-    );
-  }
-
-  // for testing
-  Widget _buildPredictionResult() {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Container(
-        padding: const EdgeInsets.all(4.0),
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Text(
-              'Gesture: $_prediction',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-              ),
-            ),
-            Text(
-              'Confidence: ${(_confidence * 100).toStringAsFixed(1)}%',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
-            ),
-            Text(
-              'Hand: $_handedness',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
-            ),
-          ],
         ),
       ),
     );
