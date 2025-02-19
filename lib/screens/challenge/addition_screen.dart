@@ -1,13 +1,10 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_hands/main.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/controllers/addition_controller.dart';
-import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';

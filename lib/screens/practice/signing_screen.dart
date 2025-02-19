@@ -11,6 +11,7 @@ import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
+import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
 
@@ -70,7 +71,8 @@ class _SigningScreenState extends State<SigningScreen>
 
       final XFile image = await _cameraController!.takePicture();
 
-      final prediction = await _sendImageToAPI(File(image.path));
+      final prediction =
+          await ImagePredictionService.sendImageToAPI(File(image.path));
 
       setState(() {
         _prediction = prediction['prediction'] ?? 401;
@@ -85,30 +87,6 @@ class _SigningScreenState extends State<SigningScreen>
       setState(() {
         _isProcessing = false;
       });
-    }
-  }
-
-  Future<Map<String, dynamic>> _sendImageToAPI(File imageFile) async {
-    // Replace with your Django API endpoint
-    String apiUrl = 'http://${GlobalVariables.server}/api/predict/';
-
-    try {
-      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-      request.files.add(await http.MultipartFile.fromPath(
-        'image',
-        imageFile.path,
-      ));
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Failed to predict: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: ${e.toString()}');
     }
   }
 
