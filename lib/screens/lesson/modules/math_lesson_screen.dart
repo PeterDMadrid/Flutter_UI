@@ -85,11 +85,10 @@ class _MathLessonScreenState extends State<MathLessonScreen>
 
   void generateNumberForSubtraction() {
     setState(() {
-      num = _random.nextInt(10);
+      num = _random.nextInt(9) + 1;
       subtrahend = _random.nextInt(num + 1);
       digits = num.toString() + subtrahend.toString();
       difference = num - subtrahend;
-      print("difference");
     });
   }
 

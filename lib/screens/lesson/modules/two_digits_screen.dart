@@ -69,17 +69,30 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     super.dispose();
   }
 
+  // At class level
+  final List<String> _recentNumbers = [];
+  final int _maxRecentHistory = 10;
+
   void generateNumber() {
     setState(() {
+      _isResetting = true;
       int num;
+
       do {
         num = 10 + Random().nextInt(90);
-      } while (num % 11 == 0);
+      } while (_recentNumbers.contains(num.toString()) || num % 11 == 0);
 
       _numberString = num.toString();
+
+      // Add to recent numbers and maintain history limit
+      _recentNumbers.add(_numberString);
+      if (_recentNumbers.length > _maxRecentHistory) {
+        _recentNumbers.removeAt(0);
+      }
+
       _currentGif = 0;
       _gifController.reset();
-      
+
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
           setState(() {
@@ -110,7 +123,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
 
   void _restartGif() {
     if (_isResetting) return;
-    
+
     setState(() {
       _currentGif = 0;
       _gifController.reset();
@@ -190,7 +203,10 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                       _buildGifDisplay(_numberString[0], true)
                     else if (_currentGif == 1)
                       _buildGifDisplay(_numberString[1], false),
-                    DigitAnimation(text: _numberString, speed: 3000, style: AppStyles.headLineStyle2.copyWith(fontSize: 64)),
+                    DigitAnimation(
+                        text: _numberString,
+                        speed: 3000,
+                        style: AppStyles.headLineStyle2.copyWith(fontSize: 64)),
                   ],
                   if (_controller.state.showContinue) const PulsingEffect(),
                 ],
