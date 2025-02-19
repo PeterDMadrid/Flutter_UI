@@ -6,15 +6,14 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_hands/services/auth_service.dart';
+import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
-import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
-
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -42,9 +41,10 @@ class _SigningScreenState extends State<SigningScreen>
   static const _storage = FlutterSecureStorage();
 
   final String instructions =
-      """1. Look at the number word on the screen (like "Three").
-2. Use your hand to sign the number in front of the camera.
-3. Wait for the app to check your sign and give feedback!""";
+      "Show your signing skills! Read the number and sign it correctly";
+
+  final String bottomInstructions =
+      "Use the camera to capture your sign. Make sure your hand is visible before clicking capture!";
 
   @override
   void initState() {
@@ -166,6 +166,12 @@ class _SigningScreenState extends State<SigningScreen>
           _overlayEntry = null;
         },
         instructionContent: instructions,
+        bottomInstruction: bottomInstructions,
+        images: const [
+          'assets/instructions/signing_instruction_1.JPG',
+          'assets/instructions/signing_instruction_2.JPG',
+          'assets/instructions/signing_instruction_3.JPG',
+        ],
       ),
     );
 
@@ -325,15 +331,13 @@ class _SigningScreenState extends State<SigningScreen>
             height: screenHeight,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                          'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
-                          style: AppStyles.headLineStyle2),
-                    ],
-                  ),
+                SizedBox(height: screenHeight * 0.010),
+                Column(
+                  children: [
+                    Text(
+                        'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
+                        style: AppStyles.headLineStyle2),
+                  ],
                 ),
                 SizedBox(height: screenHeight * 0.010),
                 Center(
@@ -341,7 +345,7 @@ class _SigningScreenState extends State<SigningScreen>
                   currentQuestion.correctNumber.toString(),
                   style: AppStyles.headLineStyle1.copyWith(fontSize: 80),
                 )),
-                SizedBox(height: screenHeight * 0.025),
+                SizedBox(height: screenHeight * 0.010),
                 _buildCameraPreview(),
                 // if (_label.isNotEmpty) _buildPredictionResult(),
               ],

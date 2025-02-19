@@ -2,12 +2,12 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/main.dart';
+import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/controllers/subtraction_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
-import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 import 'package:flutter_hands/screens/challenge/widgets/answer_display.dart';
 
 class SubtractionScreen extends StatefulWidget {
@@ -37,9 +37,9 @@ class _SubtractionScreenState extends State<SubtractionScreen> {
   int _subtractionScore = 0;
 
   final String instructions =
-      """1. Look at the number word on the screen (like "Three").
-2. Use your hand to sign the number in front of the camera.
-3. Wait for the app to check your sign and give feedback!""";
+      "Let's practice subtraction with sign language!";
+
+final String bottomInstruction = "Solve the equation and sign your answer. Capture once you're ready!";
 
   @override
   void initState() {
@@ -235,6 +235,12 @@ class _SubtractionScreenState extends State<SubtractionScreen> {
           _overlayEntry = null;
         },
         instructionContent: instructions,
+        bottomInstruction: bottomInstruction,
+        images: const [
+        "assets/instruction/challenge_instruction_subtraction_1.JPG",
+        "assets/instruction/challenge_instruction_subtraction_2.JPG",
+        "assets/instruction/challenge_instruction_subtraction_3.JPG",
+        ],
       ),
     );
 

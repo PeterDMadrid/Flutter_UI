@@ -18,7 +18,7 @@ class CameraControls extends StatelessWidget {
     return Stack(
       children: [
         Positioned(
-          bottom: 10,
+          bottom: 40,
           left: 0,
           right: 0,
           child: Center(
@@ -31,7 +31,7 @@ class CameraControls extends StatelessWidget {
           ),
         ),
         Positioned(
-          bottom: 30,
+          bottom: 60,
           left: 40,
           child: FloatingActionButton(
             foregroundColor: AppStyles.textColor,
