@@ -106,32 +106,22 @@ class SignCard extends StatelessWidget {
                 Column(
                   children: [
                     StartButton(
-                        text: "Easy",
+                        text: "Addition",
                         color: Colors.green[600],
                         onTap: () => showDialog(
                               context: context,
                               builder: (context) => const MathModeDialog(
-                                difficulty: Difficulty.easy,
+                                mode: MathMode.addition,
                               ),
                             )),
                     const SizedBox(height: 16),
                     StartButton(
-                        text: "Medium",
+                        text: "Subtraction",
                         color: Colors.orange[600],
                         onTap: () => showDialog(
                               context: context,
                               builder: (context) => const MathModeDialog(
-                                difficulty: Difficulty.medium,
-                              ),
-                            )),
-                    const SizedBox(height: 16),
-                    StartButton(
-                        text: "Hard",
-                        color: Colors.red[600],
-                        onTap: () => showDialog(
-                              context: context,
-                              builder: (context) => const MathModeDialog(
-                                difficulty: Difficulty.hard,
+                                mode: MathMode.subtraction,
                               ),
                             )),
                   ],

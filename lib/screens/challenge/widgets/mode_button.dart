@@ -5,8 +5,8 @@ import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 enum MathMode { addition, subtraction }
 
 class MathModeDialog extends StatelessWidget {
-  final Difficulty difficulty;
-  const MathModeDialog({super.key, required this.difficulty});
+  final MathMode mode;
+  const MathModeDialog({super.key, required this.mode});
 
   @override
   Widget build(BuildContext context) {
@@ -21,37 +21,53 @@ class MathModeDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Select Challenge Mode',
+              'Select Difficulty Level',
               style: AppStyles.headLineStyle2,
             ),
             const SizedBox(height: 24),
             _ModeButton(
-              title: 'Addition',
-              icon: Icons.add,
+              title: 'Easy',
+              icon: Icons.sentiment_satisfied_outlined,
               onTap: () {
-                Navigator.pop(context, MathMode.addition);
+                Navigator.pop(context);
                 Navigator.pushNamed(
                   context,
-                  '/addition_screen',
+                  '/challenge_quiz',
                   arguments: {
-                    'mode': MathMode.addition,
-                    'difficulty': difficulty,
+                    'mode': mode,
+                    'difficulty': Difficulty.easy,
                   },
                 );
               },
             ),
             const SizedBox(height: 16),
             _ModeButton(
-              title: 'Subtraction',
-              icon: Icons.remove,
+              title: 'Medium',
+              icon: Icons.sentiment_neutral_outlined,
               onTap: () {
-                Navigator.pop(context, MathMode.subtraction);
+                Navigator.pop(context);
                 Navigator.pushNamed(
                   context,
-                  '/subtraction_screen',
+                  '/challenge_quiz',
                   arguments: {
-                    'mode': MathMode.subtraction,
-                    'difficulty': difficulty,
+                    'mode': mode,
+                    'difficulty': Difficulty.medium,
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _ModeButton(
+              title: 'Hard',
+              icon: Icons.sentiment_very_dissatisfied_outlined,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/challenge_quiz',
+                  arguments: {
+                    'mode': mode,
+                    'difficulty': Difficulty.hard,
                   },
                 );
               },
