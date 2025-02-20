@@ -2,12 +2,12 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/main.dart';
+import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/controllers/addition_controller.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
-import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
 import 'package:flutter_hands/screens/challenge/widgets/answer_display.dart';
 
 class AdditionScreen extends StatefulWidget {
@@ -36,10 +36,9 @@ class _AdditionScreenState extends State<AdditionScreen> {
 
   int _additionScore = 0;
 
-  final String instructions =
-      """1. Look at the number word on the screen (like "Three").
-2. Use your hand to sign the number in front of the camera.
-3. Wait for the app to check your sign and give feedback!""";
+  final String instructions = "Time to practice addition with sign language!";
+
+  final String bottomInstructions = "Solve the equation and sign your answer. Capture once you're ready!";
 
   @override
   void initState() {
@@ -235,6 +234,12 @@ class _AdditionScreenState extends State<AdditionScreen> {
           _overlayEntry = null;
         },
         instructionContent: instructions,
+        bottomInstruction: bottomInstructions,
+        images: const [
+          "assets/instructions/challenge_instruction_addition_1.JPG",
+          "assets/instructions/challenge_instruction_addition_2.JPG",
+          "assets/instructions/challenge_instruction_addition_3.JPG",
+        ],
       ),
     );
 

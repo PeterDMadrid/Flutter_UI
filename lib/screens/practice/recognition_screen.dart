@@ -1,13 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_hands/base/res/global/global_variables.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_hands/services/auth_service.dart';
+import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
-import 'package:flutter_hands/screens/practice/widgets/instructions.dart';
-import 'package:flutter_hands/services/auth_service.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -23,9 +23,11 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   static const _storage = FlutterSecureStorage();
 
-  final String instructions = """1. Look at the number word on the screen (like "Three").
-2. Find the matching hand sign for the number word in the pictures.
-3. Tap the hand sign that matches the number word!""";
+  final String instructions =
+      "Get ready to familiarize yourself with sign language!";
+
+  final String bottomInstructions =
+      "Observe the signed number. Then, choose the correct answer. Let's begin!";
 
   @override
   void initState() {
@@ -44,6 +46,11 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           _overlayEntry = null;
         },
         instructionContent: instructions,
+        bottomInstruction: bottomInstructions,
+        images: const [
+          'assets/instructions/recognition_instruction_1.jpg',
+          'assets/instructions/recognition_instruction_2.jpg',
+        ],
       ),
     );
 
@@ -56,7 +63,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     setState(() {
       _isAnswerLocked = true;
       final isCorrect = _controller.checkAnswer(selectedChoice);
-      
+
       // Show feedback (you can implement a better feedback UI)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -113,7 +120,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
             },
             child: Text(
               'Done',
-              style: AppStyles.headLineStyle1.copyWith(color: AppStyles.buttonColor),
+              style: AppStyles.headLineStyle1
+                  .copyWith(color: AppStyles.buttonColor),
             ),
           ),
         ],
@@ -122,9 +130,11 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   Future<void> _sendRecognitionScoreToAPI(int score) async {
-    String apiUrl = 'http://${GlobalVariables.server}/api/auth/save_recognition_score/'; // Replace with your actual endpoint
-    final token = await getToken(); // Assuming you have a method to get the token
-    final userData = await AuthService.getUserData(); 
+    String apiUrl =
+        'http://${GlobalVariables.server}/api/auth/save_recognition_score/'; // Replace with your actual endpoint
+    final token =
+        await getToken(); // Assuming you have a method to get the token
+    final userData = await AuthService.getUserData();
 
     try {
       final response = await http.post(
@@ -134,7 +144,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           'Authorization': 'Token $token',
         },
         body: json.encode({
-          'username': userData?['username'], // Replace with the actual username or user ID
+          'username': userData?[
+              'username'], // Replace with the actual username or user ID
           'recognition_score': score,
         }),
       );
@@ -142,7 +153,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       if (response.statusCode == 200) {
         print('Recognition score saved successfully: ${response.body}');
       } else {
-        throw Exception('Failed to save recognition score: ${response.statusCode}');
+        throw Exception(
+            'Failed to save recognition score: ${response.statusCode}');
       }
     } catch (e) {
       print('Error saving recognition score: $e');
@@ -158,7 +170,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    final currentQuestion = _controller.questions[_controller.currentQuestionIndex];
+    final currentQuestion =
+        _controller.questions[_controller.currentQuestionIndex];
 
     return Scaffold(
       appBar: AppBar(
@@ -195,9 +208,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
               children: currentQuestion.choices.map((choice) {
                 return ChoiceCard(
                   choice: choice.toString(),
-                  onPressed: _isAnswerLocked
-                      ? () {}
-                      : () => _handleAnswer(choice),
+                  onPressed:
+                      _isAnswerLocked ? () {} : () => _handleAnswer(choice),
                 );
               }).toList(),
             ),
