@@ -327,14 +327,26 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                       }
                     },
                     itemBuilder: (BuildContext context) {
-                      return [
+                       return [
                         const PopupMenuItem<String>(
                           value: 'edit',
-                          child: Text('Edit Profile', style: TextStyle(color: Colors.black)),
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, color: Colors.black, size: 20),
+                              SizedBox(width: 8),
+                              Text('Edit Profile', style: TextStyle(color: Colors.black)),
+                            ],
+                          ),
                         ),
                         const PopupMenuItem<String>(
                           value: 'logout',
-                          child: Text('Logout', style: TextStyle(color: Colors.black)),
+                          child: Row(
+                            children: [
+                              Icon(Icons.exit_to_app, color: Colors.black, size: 20),
+                              SizedBox(width: 8),
+                              Text('Logout', style: TextStyle(color: Colors.black)),
+                            ],
+                          ),
                         ),
                       ];
                     },
