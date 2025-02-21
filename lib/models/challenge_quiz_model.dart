@@ -5,7 +5,7 @@ class ChallengeQuizModel {
   final int secondNumber;
   final int correctAnswer;
   final bool isAnswered;
-  final bool? isCorrect;
+  final bool isCorrect; // Changed to non-nullable
   final MathMode mode;
 
   ChallengeQuizModel({
@@ -14,7 +14,7 @@ class ChallengeQuizModel {
     required this.correctAnswer,
     required this.mode,
     this.isAnswered = false,
-    this.isCorrect,
+    this.isCorrect = false, // Default to false
   });
 
   ChallengeQuizModel copyWith({
@@ -38,5 +38,10 @@ class ChallengeQuizModel {
   @override
   String toString() {
     return '$firstNumber ${mode == MathMode.addition ? '+' : '-'} $secondNumber';
+  }
+
+  // Method to check the answer
+  bool checkAnswer(int answer) {
+    return answer == correctAnswer; // Check if the answer is correct
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 
 class ChallengeQuizController {
-  int totalQuestions = 5;
+  int totalQuestions; // Make this dynamic
   final Difficulty difficulty;
   final MathMode mode;
 
@@ -14,7 +14,7 @@ class ChallengeQuizController {
   final random = Random();
   List<ChallengeQuizModel> questions = [];
 
-  ChallengeQuizController({required this.difficulty, required this.mode}) {
+  ChallengeQuizController({required this.difficulty, required this.mode, this.totalQuestions = 5}) {
     _generateQuestions();
   }
 
@@ -179,10 +179,13 @@ class ChallengeQuizController {
   bool checkAnswer(List handSigns) {
     final currentQuestion = questions[currentQuestionIndex];
     int answer = int.parse(handSigns.join());
-    final isCorrect = answer == currentQuestion.correctAnswer;
+    final isCorrect = currentQuestion.checkAnswer(answer); // Use the new method
 
     if (isCorrect) {
       score++;
+    } else {
+      // Provide feedback on the correct answer
+      print('Incorrect! The correct answer is ${currentQuestion.correctAnswer}.');
     }
 
     questions[currentQuestionIndex] = currentQuestion.copyWith(

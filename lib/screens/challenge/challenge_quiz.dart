@@ -124,14 +124,20 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
 
   void _handleAnswer(List handSign) {
     final isCorrect = _quizController.checkAnswer(handSign);
+    final currentQuestion = _quizController.questions[_quizController.currentQuestionIndex];
+    final correctAnswer = currentQuestion.correctAnswer; // Get the correct answer
+
     if (isCorrect) {
       _score++;
     }
 
+    // Create the SnackBar message
+    String message = isCorrect ? 'Correct!' : 'Incorrect! The correct answer is $correctAnswer.';
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
-        duration: const Duration(seconds: 1),
+        content: Text(message),
+        duration: const Duration(seconds: 3), // Increased duration for better visibility
         behavior: SnackBarBehavior.floating,
         backgroundColor: isCorrect ? Colors.teal : Colors.red,
         margin: const EdgeInsets.all(50),
