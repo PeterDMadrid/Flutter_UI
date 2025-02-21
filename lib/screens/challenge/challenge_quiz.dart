@@ -10,6 +10,7 @@ import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 import 'package:flutter_hands/screens/challenge/widgets/answer_display.dart';
 import 'package:flutter_hands/controllers/challenge_quiz_controller.dart.dart';
+import 'package:vibration/vibration.dart';
 
 class ChallengeQuiz extends StatefulWidget {
   const ChallengeQuiz({super.key});
@@ -129,6 +130,11 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
 
     if (isCorrect) {
       _score++;
+      // Vibration feedback for correct answer
+      Vibration.vibrate(duration: 500); // Vibrate for 500 milliseconds
+    } else {
+      // Vibration feedback for incorrect answer
+      Vibration.vibrate(duration: 1000); // Vibrate for 1000 milliseconds
     }
 
     // Create the SnackBar message
@@ -157,7 +163,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       });
     });
   }
-
+  
   void _clearAnswer() {
     setState(() {
       currentAnswer.clear();
