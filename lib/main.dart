@@ -5,9 +5,8 @@ import 'package:flutter_hands/base/bottom_navbar.dart';
 import 'package:flutter_hands/screens/auth/check_auth.dart';
 import 'package:flutter_hands/screens/auth/login_screen.dart';
 import 'package:flutter_hands/screens/practice/signing_screen.dart';
-import 'package:flutter_hands/screens/challenge/addition_screen.dart';
+import 'package:flutter_hands/screens/challenge/challenge_quiz.dart';
 import 'package:flutter_hands/screens/practice/recognition_screen.dart';
-import 'package:flutter_hands/screens/challenge/subtraction_screen.dart';
 
 // Declare as global variable
 late List<CameraDescription> globalCameras;
@@ -42,8 +41,7 @@ class MyApp extends StatelessWidget {
         "/login": (context) => const LoginScreen(),
         "/signing_screen": (context) => const SigningScreen(),
         "/recognition_screen": (context) => const RecognitionScreen(),
-        "/addition_screen": (context) => const AdditionScreen(),
-        "/subtraction_screen": (context) => const SubtractionScreen(),
+        "/challenge_quiz": (context) => const ChallengeQuiz(),
         "/bottom_navbar": (context) => const BottomNavBar(),
         "/auth_check": (context) => const CheckAuth()
       }

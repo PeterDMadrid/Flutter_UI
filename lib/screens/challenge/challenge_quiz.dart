@@ -5,21 +5,23 @@ import 'package:flutter_hands/main.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
-import 'package:flutter_hands/controllers/addition_controller.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
+import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 import 'package:flutter_hands/screens/challenge/widgets/answer_display.dart';
+import 'package:flutter_hands/controllers/challenge_quiz_controller.dart.dart';
 
-class AdditionScreen extends StatefulWidget {
-  const AdditionScreen({super.key});
+class ChallengeQuiz extends StatefulWidget {
+  const ChallengeQuiz({super.key});
 
   @override
-  State<AdditionScreen> createState() => _AdditionScreenState();
+  State<ChallengeQuiz> createState() => _ChallengeQuizState();
 }
 
-class _AdditionScreenState extends State<AdditionScreen> {
-  late AdditionController _additionController;
+class _ChallengeQuizState extends State<ChallengeQuiz> {
+  late ChallengeQuizController _quizController;
   late Difficulty difficulty;
+  late MathMode mode;
 
   OverlayEntry? _overlayEntry;
   CameraController? _cameraController;
@@ -30,15 +32,17 @@ class _AdditionScreenState extends State<AdditionScreen> {
   late List<int> currentAnswer = [];
   bool _isProcessing = false;
   int _prediction = -1;
-  String _label = ''; //remove when deploying
+  String _label = '';
   String _handedness = '';
   double _confidence = 0.0;
 
-  int _additionScore = 0;
+  int _score = 0;
 
-  final String instructions = "Time to practice addition with sign language!";
+  String get instructions =>
+      "Time to practice ${mode == MathMode.addition ? 'addition' : 'subtraction'} with sign language!";
 
-  final String bottomInstructions = "Solve the equation and sign your answer. Capture once you're ready!";
+  final String bottomInstructions =
+      "Solve the equation and sign your answer. Capture once you're ready!";
 
   @override
   void initState() {
@@ -50,9 +54,15 @@ class _AdditionScreenState extends State<AdditionScreen> {
     Future.delayed(Duration.zero, () {
       Map<String, dynamic> args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      difficulty = args['difficulty']; // Store the difficulty
-      _additionController = AdditionController(difficulty: difficulty);
-      setState(() {}); // This will rebuild with the correct difficulty
+      mode = args['mode'] as MathMode;
+      difficulty = args['difficulty'] as Difficulty;
+
+      _quizController = ChallengeQuizController(
+        difficulty: difficulty,
+        mode: mode,
+      );
+
+      setState(() {});
     });
   }
 
@@ -81,8 +91,8 @@ class _AdditionScreenState extends State<AdditionScreen> {
 
       if (_prediction != 401 && mounted) {
         setState(() {
-          final currentQuestion = _additionController
-              .questions[_additionController.currentQuestionIndex];
+          final currentQuestion =
+              _quizController.questions[_quizController.currentQuestionIndex];
           final expectedLength =
               currentQuestion.correctAnswer.toString().length;
 
@@ -113,9 +123,9 @@ class _AdditionScreenState extends State<AdditionScreen> {
   }
 
   void _handleAnswer(List handSign) {
-    final isCorrect = _additionController.checkAnswer(handSign);
+    final isCorrect = _quizController.checkAnswer(handSign);
     if (isCorrect) {
-      _additionScore++;
+      _score++;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -131,9 +141,9 @@ class _AdditionScreenState extends State<AdditionScreen> {
 
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
-        if (!_additionController.isQuizFinished) {
+        if (!_quizController.isQuizFinished) {
           _isProcessing = false;
-          _additionController.nextQuestion();
+          _quizController.nextQuestion();
           currentAnswer.clear();
         } else {
           _showResults();
@@ -205,7 +215,7 @@ class _AdditionScreenState extends State<AdditionScreen> {
           style: AppStyles.headLineStyle2,
         ),
         content: Text(
-          'Your score: $_additionScore/${_additionController.totalQuestions}',
+          'Your score: $_score/${_quizController.totalQuestions}',
           style: AppStyles.paragraph1,
           textAlign: TextAlign.center,
         ),
@@ -235,11 +245,17 @@ class _AdditionScreenState extends State<AdditionScreen> {
         },
         instructionContent: instructions,
         bottomInstruction: bottomInstructions,
-        images: const [
-          "assets/instructions/challenge_instruction_addition_1.JPG",
-          "assets/instructions/challenge_instruction_addition_2.JPG",
-          "assets/instructions/challenge_instruction_addition_3.JPG",
-        ],
+        images: mode == MathMode.addition
+            ? const [
+                "assets/instructions/challenge_instruction_addition_1.JPG",
+                "assets/instructions/challenge_instruction_addition_2.JPG",
+                "assets/instructions/challenge_instruction_addition_3.JPG",
+              ]
+            : const [
+                "assets/instructions/challenge_instruction_subtraction_1.JPG",
+                "assets/instructions/challenge_instruction_subtraction_2.JPG",
+                "assets/instructions/challenge_instruction_subtraction_3.JPG",
+              ],
       ),
     );
 
@@ -257,11 +273,12 @@ class _AdditionScreenState extends State<AdditionScreen> {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     final currentQuestion =
-        _additionController.questions[_additionController.currentQuestionIndex];
+        _quizController.questions[_quizController.currentQuestionIndex];
     final expectedLength = currentQuestion.correctAnswer.toString().length;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Addition Challenge - ${difficulty.name.toUpperCase()}'),
+        title: Text('${mode == MathMode.addition ? 'Addition' : 'Subtraction'} Challenge - ${difficulty.name.toUpperCase()}'),
         backgroundColor: AppStyles.backgroundColor,
         foregroundColor: AppStyles.textColor,
       ),
@@ -312,7 +329,7 @@ class _AdditionScreenState extends State<AdditionScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    'Question ${_additionController.currentQuestionIndex + 1}/${_additionController.totalQuestions}',
+                    'Question ${_quizController.currentQuestionIndex + 1}/${_quizController.totalQuestions}',
                     style: AppStyles.headLineStyle2,
                   ),
                 ),
