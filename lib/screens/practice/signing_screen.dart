@@ -5,6 +5,7 @@ import '../../main.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
+
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -185,16 +187,8 @@ class _SigningScreenState extends State<SigningScreen>
         _signingScore++; // Increment the signing score if the answer is correct
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
-          duration: const Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: isCorrect ? Colors.teal : Colors.red,
-          margin: const EdgeInsets.all(50),
-          elevation: 30,
-        ),
-      );
+      String message = isCorrect ? 'Correct!' : 'Incorrect!';
+      showCustomSnackBar(context, isCorrect, message);
 
       Future.delayed(const Duration(seconds: 1), () {
         setState(() {

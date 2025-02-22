@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
@@ -20,6 +21,9 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   late RecognitionController _controller;
   OverlayEntry? _overlayEntry;
   bool _isAnswerLocked = false;
+  int? _selectedChoice;
+  bool _showResult = false;
+  bool _showNextButton = false;
 
   static const _storage = FlutterSecureStorage();
 
@@ -59,34 +63,28 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   void _handleAnswer(int selectedChoice) {
     if (_isAnswerLocked) return;
-
     setState(() {
-      _isAnswerLocked = true;
       final isCorrect = _controller.checkAnswer(selectedChoice);
+      String message = isCorrect ? 'Correct!' : 'Incorrect!';
+      showCustomSnackBar(context, isCorrect, message);
+      _isAnswerLocked = true;
+      _selectedChoice = selectedChoice;
+      _showResult = true;
+      _showNextButton = true;
+    });
+  }
 
-      // Show feedback (you can implement a better feedback UI)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isCorrect ? 'Correct!' : 'Incorrect!'),
-          duration: const Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: isCorrect ? Colors.teal : Colors.red,
-          margin: const EdgeInsets.all(50),
-          elevation: 30,
-        ),
-      );
-
-      // Wait for feedback before moving to next question
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() {
-          if (!_controller.isQuizFinished) {
-            _controller.nextQuestion();
-          } else {
-            _showResults();
-          }
-          _isAnswerLocked = false;
-        });
-      });
+  void _handleNext() {
+    setState(() {
+      if (!_controller.isQuizFinished) {
+        _controller.nextQuestion();
+        _selectedChoice = null;
+        _showResult = false;
+        _showNextButton = false;
+        _isAnswerLocked = false;
+      } else {
+        _showResults();
+      }
     });
   }
 
@@ -95,7 +93,6 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   void _showResults() async {
-    // Send the recognition score to the backend
     await _sendRecognitionScoreToAPI(_controller.score);
 
     showDialog(
@@ -131,9 +128,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   Future<void> _sendRecognitionScoreToAPI(int score) async {
     String apiUrl =
-        'http://${GlobalVariables.server}/api/auth/save_recognition_score/'; // Replace with your actual endpoint
-    final token =
-        await getToken(); // Assuming you have a method to get the token
+        'http://${GlobalVariables.server}/api/auth/save_recognition_score/';
+    final token = await getToken();
     final userData = await AuthService.getUserData();
 
     try {
@@ -144,8 +140,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           'Authorization': 'Token $token',
         },
         body: json.encode({
-          'username': userData?[
-              'username'], // Replace with the actual username or user ID
+          'username': userData?['username'],
           'recognition_score': score,
         }),
       );
@@ -198,20 +193,54 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                 style: AppStyles.headLineStyle1.copyWith(fontSize: 80),
               ),
             ),
-            GridView.count(
-              crossAxisSpacing: 2.0,
-              mainAxisSpacing: 2.0,
-              crossAxisCount: 2,
-              childAspectRatio: 1,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: currentQuestion.choices.map((choice) {
-                return ChoiceCard(
-                  choice: choice.toString(),
-                  onPressed:
-                      _isAnswerLocked ? () {} : () => _handleAnswer(choice),
-                );
-              }).toList(),
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: GridView.count(
+                      crossAxisSpacing: 2.0,
+                      mainAxisSpacing: 2.0,
+                      crossAxisCount: 2,
+                      childAspectRatio: 1,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: currentQuestion.choices.map((choice) {
+                        return ChoiceCard(
+                          choice: choice.toString(),
+                          onPressed: _isAnswerLocked
+                              ? () {}
+                              : () => _handleAnswer(choice),
+                          isSelected: _selectedChoice == choice,
+                          isCorrect: currentQuestion.correctNumber == choice,
+                          showResult: _showResult,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  if (_showNextButton) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 60),
+                      child: ElevatedButton(
+                        onPressed: _handleNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppStyles.buttonColor,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Next Question',
+                          style: AppStyles.headLineStyle2.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ],
         ),
