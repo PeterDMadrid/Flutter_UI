@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/main.dart';
+import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
@@ -133,17 +134,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
 
     // Create the SnackBar message
     String message = isCorrect ? 'Correct!' : 'Incorrect! The correct answer is $correctAnswer.';
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 3), // Increased duration for better visibility
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: isCorrect ? Colors.teal : Colors.red,
-        margin: const EdgeInsets.all(50),
-        elevation: 30,
-      ),
-    );
+    showCustomSnackBar(context, isCorrect, message);
 
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
