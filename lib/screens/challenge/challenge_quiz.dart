@@ -22,7 +22,7 @@ class ChallengeQuiz extends StatefulWidget {
 
 class _ChallengeQuizState extends State<ChallengeQuiz> {
   late ChallengeQuizController _quizController;
-  late Difficulty difficulty;
+  late dynamic difficulty;
   late MathMode mode;
 
   OverlayEntry? _overlayEntry;
@@ -57,7 +57,11 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       Map<String, dynamic> args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       mode = args['mode'] as MathMode;
-      difficulty = args['difficulty'] as Difficulty;
+      if (mode == MathMode.addition) {
+        difficulty = args['difficulty'] as AdditionDifficulty;
+      } else {
+        difficulty = args['difficulty'] as SubtractionDifficulty;
+      }
 
       _quizController = ChallengeQuizController(
         difficulty: difficulty,
@@ -138,7 +142,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       Vibration.vibrate(duration: 1000); // Vibrate for 1000 milliseconds
     }
 
-    // Create the SnackBar message
+  // Create the SnackBar message
     String message = isCorrect ? 'Correct!' : 'Incorrect! The correct answer is $correctAnswer.';
     showCustomSnackBar(context, isCorrect, message);
 

@@ -7,7 +7,57 @@ import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 
 enum CardType { recognition, signing, challenge }
 
-enum Difficulty { easy, medium, hard }
+enum AdditionDifficulty {
+  additionLevel1,
+  additionLevel2,
+  additionLevel3,
+  additionLevel4,
+  additionLevel5,
+  additionLevel6;
+
+  String get name {
+    switch (this) {
+      case AdditionDifficulty.additionLevel1:
+        return "Single Digit Pairs";
+      case AdditionDifficulty.additionLevel2:
+        return "Doubles Plus One";
+      case AdditionDifficulty.additionLevel3:
+        return "Teen Numbers";
+      case AdditionDifficulty.additionLevel4:
+        return "Bridging Ten";
+      case AdditionDifficulty.additionLevel5:
+        return "Double Digits";
+      case AdditionDifficulty.additionLevel6:
+        return "Adding Larger Two-Digit Numbers";
+    }
+  }
+}
+
+enum SubtractionDifficulty {
+  subtractionLevel1,
+  subtractionLevel2,
+  subtractionLevel3,
+  subtractionLevel4,
+  subtractionLevel5,
+  subtractionLevel6;
+
+  String get name {
+    switch (this) {
+      case SubtractionDifficulty.subtractionLevel1:
+        return "Facts Within Ten";
+      case SubtractionDifficulty.subtractionLevel2:
+        return "Taking From Ten";
+      case SubtractionDifficulty.subtractionLevel3:
+        return "Near Ten Subtraction";
+      case SubtractionDifficulty.subtractionLevel4:
+        return "Teen Take-Aways";
+      case SubtractionDifficulty.subtractionLevel5:
+        return "Bridging Ten";
+      case SubtractionDifficulty.subtractionLevel6:
+        return "Subtracting Larger Two-Digit Numbers";
+    }
+  }
+}
 
 class SignCard extends StatelessWidget {
   const SignCard({
