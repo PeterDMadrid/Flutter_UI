@@ -4,8 +4,8 @@ import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 
 class ChallengeQuizController {
-  int totalQuestions; // Make this dynamic
-  final Difficulty difficulty;
+  int totalQuestions;
+  final dynamic difficulty;
   final MathMode mode;
 
   int currentQuestionIndex = 0;
@@ -14,40 +14,65 @@ class ChallengeQuizController {
   final random = Random();
   List<ChallengeQuizModel> questions = [];
 
-  ChallengeQuizController({required this.difficulty, required this.mode, this.totalQuestions = 5}) {
+  ChallengeQuizController({
+    required this.difficulty,
+    required this.mode,
+    this.totalQuestions = 5,
+  }) {
     _generateQuestions();
   }
 
   void _generateQuestions() {
-    switch (difficulty) {
-      case Difficulty.easy:
-        mode == MathMode.addition
-            ? _generateEasyAdditionQuestions()
-            : _generateEasySubtractionQuestions();
-        break;
-      case Difficulty.medium:
-        mode == MathMode.addition
-            ? _generateMediumAdditionQuestions()
-            : _generateMediumSubtractionQuestions();
-        break;
-      case Difficulty.hard:
-        mode == MathMode.addition
-            ? _generateHardAdditionQuestions()
-            : _generateHardSubtractionQuestions();
-        break;
+    if (mode == MathMode.addition) {
+      switch (difficulty) {
+        case AdditionDifficulty.additionLevel1:
+          _generateAdditionLevel1();
+          break;
+        case AdditionDifficulty.additionLevel2:
+          _generateAdditionLevel2();
+          break;
+        case AdditionDifficulty.additionLevel3:
+          _generateAdditionLevel3();
+          break;
+        case AdditionDifficulty.additionLevel4:
+          _generateAdditionLevel4();
+          break;
+        case AdditionDifficulty.additionLevel5:
+          _generateAdditionLevel5();
+          break;
+        case AdditionDifficulty.additionLevel6:
+          _generateAdditionLevel6();
+          break;
+      }
+    } else {
+      switch (difficulty) {
+        case SubtractionDifficulty.subtractionLevel1:
+          _generateSubtractionLevel1();
+          break;
+        case SubtractionDifficulty.subtractionLevel2:
+          _generateSubtractionLevel2();
+          break;
+        case SubtractionDifficulty.subtractionLevel3:
+          _generateSubtractionLevel3();
+          break;
+        case SubtractionDifficulty.subtractionLevel4:
+          _generateSubtractionLevel4();
+          break;
+        case SubtractionDifficulty.subtractionLevel5:
+          _generateSubtractionLevel5();
+          break;
+        case SubtractionDifficulty.subtractionLevel6:
+          _generateSubtractionLevel6();
+          break;
+      }
     }
   }
 
-  void _generateEasyAdditionQuestions() {
+  void _generateAdditionLevel1() {
+    // Single Digit Pairs (0-9)
     for (int i = 0; i < totalQuestions; i++) {
-      int firstNumber;
-      int secondNumber;
-
-      do {
-        firstNumber = random.nextInt(9);
-        int maxSecond = 9 - firstNumber;
-        secondNumber = random.nextInt(maxSecond + 1);
-      } while (firstNumber == 0 && secondNumber == 0);
+      int firstNumber = random.nextInt(10);
+      int secondNumber = random.nextInt(10);
 
       questions.add(ChallengeQuizModel(
         firstNumber: firstNumber,
@@ -58,10 +83,89 @@ class ChallengeQuizController {
     }
   }
 
-  void _generateEasySubtractionQuestions() {
+  void _generateAdditionLevel2() {
+    // Doubles Plus One
     for (int i = 0; i < totalQuestions; i++) {
-      final firstNumber = random.nextInt(9) + 1;
-      final secondNumber = random.nextInt(firstNumber);
+      int baseNumber = random.nextInt(9) + 1; // 1-9
+      bool addToFirst = random.nextBool();
+      
+      int firstNumber = addToFirst ? baseNumber + 1 : baseNumber;
+      int secondNumber = addToFirst ? baseNumber : baseNumber + 1;
+
+      questions.add(ChallengeQuizModel(
+        firstNumber: firstNumber,
+        secondNumber: secondNumber,
+        correctAnswer: firstNumber + secondNumber,
+        mode: mode,
+      ));
+    }
+  }
+
+  void _generateAdditionLevel3() {
+    // Teen Numbers (adding to 10)
+    for (int i = 0; i < totalQuestions; i++) {
+      int secondNumber = random.nextInt(9) + 1; // 1-9
+
+      questions.add(ChallengeQuizModel(
+        firstNumber: 10,
+        secondNumber: secondNumber,
+        correctAnswer: 10 + secondNumber,
+        mode: mode,
+      ));
+    }
+  }
+
+  void _generateAdditionLevel4() {
+    // Bridging Ten (sums crossing 10)
+    for (int i = 0; i < totalQuestions; i++) {
+      int firstNumber = random.nextInt(4) + 7; // 7-10
+      int secondNumber = random.nextInt(5) + 3; // 3-7
+
+      questions.add(ChallengeQuizModel(
+        firstNumber: firstNumber,
+        secondNumber: secondNumber,
+        correctAnswer: firstNumber + secondNumber,
+        mode: mode,
+      ));
+    }
+  }
+
+  void _generateAdditionLevel5() {
+    // Double Digits within 20
+    for (int i = 0; i < totalQuestions; i++) {
+      int firstNumber = random.nextInt(9) + 11; // 11-19
+      int secondNumber = random.nextInt(5) + 1; // 1-5
+
+      questions.add(ChallengeQuizModel(
+        firstNumber: firstNumber,
+        secondNumber: secondNumber,
+        correctAnswer: firstNumber + secondNumber,
+        mode: mode,
+      ));
+    }
+  }
+
+  void _generateAdditionLevel6() {
+    // Larger Two-Digit Numbers
+    for (int i = 0; i < totalQuestions; i++) {
+      int firstNumber = random.nextInt(30) + 21; // 21-50
+      int secondNumber = random.nextInt(30) + 11; // 11-40
+
+      questions.add(ChallengeQuizModel(
+        firstNumber: firstNumber,
+        secondNumber: secondNumber,
+        correctAnswer: firstNumber + secondNumber,
+        mode: mode,
+      ));
+    }
+  }
+
+  // Subtraction level generators
+  void _generateSubtractionLevel1() {
+    // Facts Within Ten
+    for (int i = 0; i < totalQuestions; i++) {
+      int firstNumber = random.nextInt(6) + 4; // 4-9
+      int secondNumber = random.nextInt(firstNumber - 1) + 1; // 1 to firstNumber-1
 
       questions.add(ChallengeQuizModel(
         firstNumber: firstNumber,
@@ -72,105 +176,76 @@ class ChallengeQuizController {
     }
   }
 
-  void _generateMediumAdditionQuestions() {
+  void _generateSubtractionLevel2() {
+    // Taking From Ten
     for (int i = 0; i < totalQuestions; i++) {
-      int firstNumber = 0;
-      int secondNumber = 0;
-      int sum;
-
-      do {
-        firstNumber = random.nextInt(30);
-        int minSecond = max(11 - firstNumber, 0);
-        int maxSecond = 30 - firstNumber;
-
-        if (minSecond <= maxSecond) {
-          secondNumber = minSecond + random.nextInt(maxSecond - minSecond + 1);
-          sum = firstNumber + secondNumber;
-        } else {
-          sum = 0;
-        }
-      } while (sum < 11 || sum > 30);
+      int secondNumber = random.nextInt(9) + 1; // 1-9
 
       questions.add(ChallengeQuizModel(
-        firstNumber: firstNumber,
+        firstNumber: 10,
         secondNumber: secondNumber,
-        correctAnswer: sum,
+        correctAnswer: 10 - secondNumber,
         mode: mode,
       ));
     }
   }
 
-  void _generateMediumSubtractionQuestions() {
+  void _generateSubtractionLevel3() {
+    // Near Ten Subtraction
     for (int i = 0; i < totalQuestions; i++) {
-      int firstNumber;
-      int secondNumber;
-      int difference;
-
-      do {
-        firstNumber = random.nextInt(89) + 11;
-        final maxSecond = min(99, firstNumber - 11);
-        final minSecond = max(0, firstNumber - 30);
-
-        secondNumber = minSecond + random.nextInt(maxSecond - minSecond + 1);
-        difference = firstNumber - secondNumber;
-      } while (difference < 11 || difference > 30);
+      bool useEleven = random.nextBool();
+      int firstNumber = useEleven ? 11 : 9;
+      int secondNumber = random.nextInt(4) + 1; // 1-4
 
       questions.add(ChallengeQuizModel(
         firstNumber: firstNumber,
         secondNumber: secondNumber,
-        correctAnswer: difference,
+        correctAnswer: firstNumber - secondNumber,
         mode: mode,
       ));
     }
   }
 
-  void _generateHardAdditionQuestions() {
+  void _generateSubtractionLevel4() {
+    // Teen Take-Aways
     for (int i = 0; i < totalQuestions; i++) {
-      int firstNumber = 0;
-      int secondNumber = 0;
-      int sum;
-
-      do {
-        firstNumber = random.nextInt(98) + 1;
-        int minSecond = max(31 - firstNumber, 0);
-        int maxSecond = 99 - firstNumber;
-
-        if (minSecond <= maxSecond) {
-          secondNumber = minSecond + random.nextInt(maxSecond - minSecond + 1);
-          sum = firstNumber + secondNumber;
-        } else {
-          sum = 0;
-        }
-      } while (sum < 31 || sum > 99);
+      int firstNumber = random.nextInt(5) + 13; // 13-17
+      int secondNumber = random.nextInt(7) + 3; // 3-9
 
       questions.add(ChallengeQuizModel(
         firstNumber: firstNumber,
         secondNumber: secondNumber,
-        correctAnswer: sum,
+        correctAnswer: firstNumber - secondNumber,
         mode: mode,
       ));
     }
   }
 
-  void _generateHardSubtractionQuestions() {
+  void _generateSubtractionLevel5() {
+    // Bridging Ten
     for (int i = 0; i < totalQuestions; i++) {
-      int firstNumber;
-      int secondNumber;
-      int difference;
-
-      do {
-        firstNumber = random.nextInt(69) + 31;
-        final maxSecond = min(99, firstNumber - 31);
-        final minSecond = max(0, firstNumber - 99);
-
-        secondNumber = minSecond + random.nextInt(maxSecond - minSecond + 1);
-        difference = firstNumber - secondNumber;
-      } while (difference < 31 || difference > 99);
+      int firstNumber = random.nextInt(5) + 12; // 12-16
+      int secondNumber = random.nextInt(4) + 4; // 4-7
 
       questions.add(ChallengeQuizModel(
         firstNumber: firstNumber,
         secondNumber: secondNumber,
-        correctAnswer: difference,
+        correctAnswer: firstNumber - secondNumber,
+        mode: mode,
+      ));
+    }
+  }
+
+  void _generateSubtractionLevel6() {
+    // Larger Two-Digit Numbers
+    for (int i = 0; i < totalQuestions; i++) {
+      int firstNumber = random.nextInt(40) + 35; // 35-74
+      int secondNumber = random.nextInt(25) + 15; // 15-39
+
+      questions.add(ChallengeQuizModel(
+        firstNumber: firstNumber,
+        secondNumber: secondNumber,
+        correctAnswer: firstNumber - secondNumber,
         mode: mode,
       ));
     }
@@ -179,12 +254,11 @@ class ChallengeQuizController {
   bool checkAnswer(List handSigns) {
     final currentQuestion = questions[currentQuestionIndex];
     int answer = int.parse(handSigns.join());
-    final isCorrect = currentQuestion.checkAnswer(answer); // Use the new method
+    final isCorrect = currentQuestion.checkAnswer(answer);
 
     if (isCorrect) {
       score++;
     } else {
-      // Provide feedback on the correct answer
       print('Incorrect! The correct answer is ${currentQuestion.correctAnswer}.');
     }
 

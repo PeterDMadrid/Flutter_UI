@@ -8,71 +8,105 @@ class MathModeDialog extends StatelessWidget {
   final MathMode mode;
   const MathModeDialog({super.key, required this.mode});
 
+  String _getDifficultyTitle(dynamic difficulty) {
+    switch (difficulty) {
+      case AdditionDifficulty.additionLevel1:
+        return "Single Digit Pairs";
+      case AdditionDifficulty.additionLevel2:
+        return "Doubles Plus One";
+      case AdditionDifficulty.additionLevel3:
+        return "Teen Numbers";
+      case AdditionDifficulty.additionLevel4:
+        return "Bridging Ten";
+      case AdditionDifficulty.additionLevel5:
+        return "Double Digits";
+      case AdditionDifficulty.additionLevel6:
+        return "Adding Larger Two-Digit Numbers";
+      case SubtractionDifficulty.subtractionLevel1:
+        return "Facts Within Ten";
+      case SubtractionDifficulty.subtractionLevel2:
+        return "Taking From Ten";
+      case SubtractionDifficulty.subtractionLevel3:
+        return "Near Ten Subtraction";
+      case SubtractionDifficulty.subtractionLevel4:
+        return "Teen Take-Aways";
+      case SubtractionDifficulty.subtractionLevel5:
+        return "Bridging Ten";
+      case SubtractionDifficulty.subtractionLevel6:
+        return "Subtracting Larger Two-Digit Numbers";
+      default:
+        return "Unknown Level";
+    }
+  }
+
+  IconData _getDifficultyIcon(int level) {
+    switch (level) {
+      case 1:
+      case 2:
+        return Icons.sentiment_very_satisfied_outlined;
+      case 3:
+      case 4:
+        return Icons.sentiment_satisfied_outlined;
+      case 5:
+      case 6:
+        return Icons.sentiment_very_dissatisfied_outlined;
+      default:
+        return Icons.question_mark;
+    }
+  }
+
+  List<dynamic> _getDifficultyLevels() {
+    return mode == MathMode.addition
+        ? AdditionDifficulty.values
+        : SubtractionDifficulty.values;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final levels = _getDifficultyLevels();
+
     return Dialog(
       backgroundColor: AppStyles.roseRed,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Select Difficulty Level',
-              style: AppStyles.headLineStyle2,
-            ),
-            const SizedBox(height: 24),
-            _ModeButton(
-              title: 'Easy',
-              icon: Icons.sentiment_satisfied_outlined,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(
-                  context,
-                  '/challenge_quiz',
-                  arguments: {
-                    'mode': mode,
-                    'difficulty': Difficulty.easy,
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            _ModeButton(
-              title: 'Medium',
-              icon: Icons.sentiment_neutral_outlined,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(
-                  context,
-                  '/challenge_quiz',
-                  arguments: {
-                    'mode': mode,
-                    'difficulty': Difficulty.medium,
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            _ModeButton(
-              title: 'Hard',
-              icon: Icons.sentiment_very_dissatisfied_outlined,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(
-                  context,
-                  '/challenge_quiz',
-                  arguments: {
-                    'mode': mode,
-                    'difficulty': Difficulty.hard,
-                  },
-                );
-              },
-            ),
-          ],
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Select ${mode == MathMode.addition ? "Addition" : "Subtraction"} Level',
+                style: AppStyles.headLineStyle2,
+              ),
+              const SizedBox(height: 24),
+              ...List.generate(
+                levels.length,
+                (index) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index < levels.length - 1 ? 16.0 : 0,
+                  ),
+                  child: _ModeButton(
+                    title: _getDifficultyTitle(levels[index]),
+                    icon: _getDifficultyIcon(index + 1),
+                    level: "Level ${index + 1}",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(
+                        context,
+                        '/challenge_quiz',
+                        arguments: {
+                          'mode': mode,
+                          'difficulty': levels[index],
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -84,9 +118,11 @@ class _ModeButton extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.onTap,
+    required this.level,
   });
 
   final String title;
+  final String level;
   final IconData icon;
   final VoidCallback onTap;
 
@@ -104,19 +140,30 @@ class _ModeButton extends StatelessWidget {
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                size: 40,
-                weight: 700,
-                color: Colors.white,
+              Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 24,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    level,
+                    style: AppStyles.paragraph1.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
+              const SizedBox(height: 8),
               Text(
                 title,
-                style: AppStyles.paragraph1,
+                style: AppStyles.paragraph1.copyWith(fontSize: 14),
               ),
             ],
           ),
