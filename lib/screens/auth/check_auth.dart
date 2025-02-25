@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/bottom_navbar.dart';
+import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/screens/auth/login_screen.dart';
+import 'package:lottie/lottie.dart';
 
 class CheckAuth extends StatefulWidget {
   const CheckAuth({super.key});
@@ -48,11 +50,16 @@ class _CheckAuthState extends State<CheckAuth> {
     }
   }
 
-  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      backgroundColor: AppStyles.backgroundColor,
       body: Center(
-        child: CircularProgressIndicator(),
+        child: Lottie.asset(
+          'assets/animations/splash_screen.json',
+          width: 200,
+          height: 200,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
