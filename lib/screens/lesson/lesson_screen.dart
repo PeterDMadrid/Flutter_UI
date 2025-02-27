@@ -5,7 +5,6 @@ import 'package:flutter_hands/screens/lesson/widgets/lesson_card.dart';
 import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/math_lesson_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/introduction/Introduction_screen.dart';
-
 class LessonScreen extends StatefulWidget {
   const LessonScreen({super.key, required this.name});
   final String name;
@@ -26,6 +25,47 @@ class _LessonScreenState extends State<LessonScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: AppStyles.backgroundColor,
+      appBar: AppBar(
+        title: const Text('MatHands'),
+        backgroundColor:Color.fromARGB(255, 35, 73, 104),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+           const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 35, 73, 104),
+              ),
+              child: Text(
+                'Profile pic/progress here',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('Go to profile'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Progress'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('logout'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
       body: ListView(
         children: [
           Container(
