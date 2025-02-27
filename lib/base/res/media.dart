@@ -1,10 +1,14 @@
 class AppMedia {
   static const _baseMedia = "assets/images";
   static const mathBackground = '$_baseMedia/math_bg.png';
-  static const practiceSignBackground = '$_baseMedia/sign_poster_clear.png';
-  static const practiceRecognitionBackground = '$_baseMedia/reco_poster_clear.png';
+  static const signingPoster = '$_baseMedia/signing_poster.png';
+  static const recognitionPoster =
+      '$_baseMedia/recognition_poster.png';
   static const defaultProfilePhoto = '$_baseMedia/default_profile_photo.jpg';
-  static const challengeBackground = '$_baseMedia/challenge_poster.png';
+  static const challengePoster = '$_baseMedia/challenge_poster.png';
+  static const introductionPoster = '$_baseMedia/introduction_poster.png';
+  static const twoDigitsPoster = '$_baseMedia/two_digits_poster.png';
+  static const mathLessonPoster = '$_baseMedia/math_lesson_poster.png';
 
   static const _baseMediaForHands = "assets/hands";
   static const List<String> handsSign = [

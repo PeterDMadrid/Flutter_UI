@@ -7,9 +7,11 @@ class AppStyles {
   static Color lavender = const Color(0xFF7A32A9);
   static Color buttonColor = const Color.fromARGB(255, 55, 133, 221);
   static Color khaki = const Color.fromARGB(255, 206, 192, 65);
-  static Color myblue = const Color(0xFF4AABCD);
+  // static Color myblue = const Color(0xFF4AABCD);
   static Color backgroundColor = const Color(0xFF102A43);
   static Color headlineColor = const Color(0xFFDCDCDC);
+  static Color boxShadowColor = const Color(0xFF0D1B2A);
+  static Color myblue = const Color.fromARGB(255, 9, 70, 92);
 
   static TextStyle darkTextStyle =
       const TextStyle(fontSize: 26, color: Color(0xFF0B0B0B));
