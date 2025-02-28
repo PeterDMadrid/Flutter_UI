@@ -53,14 +53,6 @@ class _CheckAuthState extends State<CheckAuth> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppStyles.backgroundColor,
-      body: Center(
-        child: Lottie.asset(
-          'assets/animations/splash_screen.json',
-          width: 200,
-          height: 200,
-          fit: BoxFit.cover,
-        ),
-      ),
     );
   }
 }
