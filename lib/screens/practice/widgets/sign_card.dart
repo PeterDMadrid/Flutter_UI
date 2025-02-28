@@ -77,116 +77,151 @@ class SignCard extends StatelessWidget {
   Widget build(BuildContext context) {
     Color startColor;
     Color endColor;
+    Color accentColor;
     String backgroundImage;
     String route;
+    IconData cardIcon;
 
     switch (cardType) {
       case CardType.recognition:
         startColor = AppStyles.myblue;
-        endColor = AppStyles.myblue.withOpacity(0.6);
-        backgroundImage = AppMedia.practiceSignBackground;
+        endColor = const Color(0xFF168AAD);
+        accentColor = const Color(0xFF76C7C0);
+        backgroundImage = AppMedia.recognitionPoster;
         route = "/recognition_screen";
+        cardIcon = Icons.visibility;
         break;
       case CardType.signing:
-        startColor = AppStyles.lavender.withOpacity(0.6);
-        endColor = AppStyles.lavender;
-        backgroundImage = AppMedia.practiceRecognitionBackground;
+        startColor = AppStyles.myblue;
+        endColor = const Color(0xFF7A32A9);
+        accentColor = const Color(0xFFC08CE0);
+        backgroundImage = AppMedia.signingPoster;
         route = "/signing_screen";
+        cardIcon = Icons.sign_language;
         break;
       case CardType.challenge:
-        startColor = AppStyles.roseRed;
-        endColor = AppStyles.roseRed.withOpacity(0.6);
-        backgroundImage = AppMedia.challengeBackground;
+        startColor = const Color(0xFF6D0F1F);
+        endColor = const Color(0xFFB83248);
+        accentColor = const Color(0xFFFF5C5C);
+        backgroundImage = AppMedia.challengePoster;
         route = "/basic_flow_widget";
+        cardIcon = Icons.extension;
         break;
     }
 
     return Animate(
       delay: AppStyles.getStaggeredDelay(index),
       effects: AppStyles.cardEntranceEffects2(),
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(
-          minHeight: 310,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [startColor, endColor],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: Stack(clipBehavior: Clip.none, children: [
+        Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            minHeight: 310,
           ),
-          borderRadius: BorderRadius.circular(8),
-          image: DecorationImage(
-            image: AssetImage(backgroundImage),
-            fit: BoxFit.none,
-            scale: 2.5,
-            alignment: const Alignment(0.9, -0.5),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                practiceType,
-                style: AppStyles.paragraph1,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [startColor, endColor, endColor.withOpacity(0.85)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: const [0.0, 0.7, 1.0],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppStyles.boxShadowColor,
+                spreadRadius: 3,
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
-              const SizedBox(
-                height: 25,
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    flex: 6,
-                    child: Text(
-                      desc,
-                      style: AppStyles.paragraph1.copyWith(fontSize: 18),
-                    ),
-                  ),
-                  const Spacer(flex: 4),
-                ],
-              ),
-              const SizedBox(
-                height: 35,
-              ),
-              if (cardType == CardType.challenge)
-                Column(
-                  children: [
-                    StartButton(
-                        text: "Addition",
-                        color: Colors.green[600],
-                        onTap: () => showDialog(
-                              context: context,
-                              builder: (context) => const MathModeDialog(
-                                mode: MathMode.addition,
-                              ),
-                            )),
-                    const SizedBox(height: 16),
-                    StartButton(
-                        text: "Subtraction",
-                        color: Colors.orange[600],
-                        onTap: () => showDialog(
-                              context: context,
-                              builder: (context) => const MathModeDialog(
-                                mode: MathMode.subtraction,
-                              ),
-                            )),
-                  ],
-                )
-              else
-                Center(
-                  child: StartButton(
-                    text: "START",
-                    onTap: () => Navigator.pushNamed(context, route),
-                  ),
-                ),
             ],
           ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      cardIcon,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      practiceType,
+                      style: AppStyles.paragraph1.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 25),
+                Row(
+                  children: [
+                    Flexible(
+                      flex: 6,
+                      child: Text(
+                        desc,
+                        style: AppStyles.paragraph1.copyWith(
+                          fontSize: 18,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                    const Spacer(flex: 4),
+                  ],
+                ),
+                const SizedBox(height: 35),
+                if (cardType == CardType.challenge)
+                  Column(
+                    children: [
+                      StartButton(
+                        text: "Addition",
+                        color: const Color(0xFFFFD166),
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (context) => const MathModeDialog(
+                            mode: MathMode.addition,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      StartButton(
+                        text: "Subtraction",
+                        color: const Color(0xFF4A90E2),
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (context) => const MathModeDialog(
+                            mode: MathMode.subtraction,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Center(
+                    child: StartButton(
+                      text: "START",
+                      onTap: () => Navigator.pushNamed(context, route),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
-      ),
+        Positioned(
+          right: -22,
+          top: -8,
+          child: Image.asset(
+            backgroundImage,
+            width: 180,
+            height: 180,
+          ),
+        ),
+      ]),
     );
   }
 }
