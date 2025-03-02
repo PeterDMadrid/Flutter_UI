@@ -7,6 +7,7 @@ import 'package:flutter_hands/screens/lesson/widgets/lesson_card.dart';
 import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/math_lesson_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/introduction/Introduction_screen.dart';
+import 'package:flutter_hands/screens/lesson/widgets/side_menu.dart';
 
 class LessonScreen extends StatefulWidget {
   const LessonScreen({super.key, required this.name});
@@ -20,15 +21,22 @@ class _LessonScreenState extends State<LessonScreen> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-
+    
     return Scaffold(
         backgroundColor: AppStyles.backgroundColor,
+        appBar: AppBar(
+          title: const Text("Lesson",
+          style: TextStyle(color: Colors.white70),),
+          backgroundColor: const Color.fromARGB(255, 16, 68, 110),
+          ),
+        drawer: const SideMenu(),
         body: Stack(
           children: [
             buildLessonCards(screenHeight),
             const TipBox(staggerDelay: 1),
           ],
-        ));
+        )
+        );
   }
 
   Widget buildLessonCards(double screenHeight) {
