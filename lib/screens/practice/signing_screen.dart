@@ -10,12 +10,12 @@ import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
-
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -59,7 +59,7 @@ class _SigningScreenState extends State<SigningScreen>
     _signingController = SigningController();
   }
 
-  Future<void> _captureAndPredict() async {
+  Future<void> _captureAndPredict(isDarkMode) async {
     if (_isProcessing ||
         _cameraController == null ||
         !_cameraController!.value.isInitialized) {
@@ -83,7 +83,7 @@ class _SigningScreenState extends State<SigningScreen>
         _handedness = prediction['handedness'] ?? 'Unknown';
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleAnswer(_prediction);
+        _handleAnswer(_prediction, isDarkMode);
       });
     } catch (e) {
       setState(() {
@@ -180,7 +180,7 @@ class _SigningScreenState extends State<SigningScreen>
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _handleAnswer(int handSign) {
+  void _handleAnswer(int handSign, isDarkMode) {
     setState(() {
       final isCorrect = _signingController.checkAnswer(handSign);
       if (isCorrect) {
@@ -196,7 +196,7 @@ class _SigningScreenState extends State<SigningScreen>
             _isProcessing = false;
             _signingController.nextQuestion();
           } else {
-            _showResults();
+            _showResults(isDarkMode);
           }
         });
       });
@@ -236,7 +236,7 @@ class _SigningScreenState extends State<SigningScreen>
     }
   }
 
-  void _showResults() {
+  void _showResults(isDarkMode) {
     // Send the signing score to the backend
     _sendScoreToAPI(_signingScore);
 
@@ -244,14 +244,14 @@ class _SigningScreenState extends State<SigningScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppStyles.backgroundColor,
+        backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
         title: Text(
           'Quiz Complete!',
-          style: AppStyles.headLineStyle2,
+          style: AppStyles.getHeadLineStyle2(isDarkMode),
         ),
         content: Text(
           'Your score: $_signingScore/${SigningController.totalQuestions}',
-          style: AppStyles.paragraph1,
+          style: AppStyles.getParagraph1(isDarkMode),
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -262,7 +262,7 @@ class _SigningScreenState extends State<SigningScreen>
             },
             child: Text(
               'Done',
-              style: AppStyles.headLineStyle1
+              style: AppStyles.getHeadLineStyle1(isDarkMode)
                   .copyWith(color: AppStyles.buttonColor),
             ),
           ),
@@ -276,17 +276,21 @@ class _SigningScreenState extends State<SigningScreen>
     double screenHeight = MediaQuery.of(context).size.height;
     final currentQuestion =
         _signingController.questions[_signingController.currentQuestionIndex];
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Signing Practice'),
-        backgroundColor: AppStyles.backgroundColor,
-        foregroundColor: AppStyles.textColor,
-      ),
-      body: _buildBody(screenHeight, currentQuestion),
-    );
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Signing Practice'),
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              foregroundColor: AppStyles.getTextColor(isDarkMode),
+            ),
+            body: _buildBody(screenHeight, currentQuestion, isDarkMode),
+          );
+        });
   }
 
-  Widget _buildBody(double screenHeight, final currentQuestion) {
+  Widget _buildBody(double screenHeight, final currentQuestion, isDarkMode) {
     if (_errorMessage.isNotEmpty) {
       return Center(
         child: Padding(
@@ -321,7 +325,8 @@ class _SigningScreenState extends State<SigningScreen>
         fit: StackFit.expand,
         children: [
           Container(
-            decoration: BoxDecoration(color: AppStyles.backgroundColor),
+            decoration:
+                BoxDecoration(color: AppStyles.getBackgroundColor(isDarkMode)),
             height: screenHeight,
             child: Column(
               children: [
@@ -330,14 +335,15 @@ class _SigningScreenState extends State<SigningScreen>
                   children: [
                     Text(
                         'Question ${_signingController.currentQuestionIndex + 1}/${SigningController.totalQuestions}',
-                        style: AppStyles.headLineStyle2),
+                        style: AppStyles.getHeadLineStyle2(isDarkMode)),
                   ],
                 ),
                 SizedBox(height: screenHeight * 0.010),
                 Center(
                     child: Text(
                   currentQuestion.correctNumber.toString(),
-                  style: AppStyles.headLineStyle1.copyWith(fontSize: 80),
+                  style: AppStyles.getHeadLineStyle1(isDarkMode)
+                      .copyWith(fontSize: 80),
                 )),
                 SizedBox(height: screenHeight * 0.010),
                 _buildCameraPreview(),
@@ -346,7 +352,9 @@ class _SigningScreenState extends State<SigningScreen>
             ),
           ),
           CameraControls(
-            onCapture: _isProcessing ? () {} : _captureAndPredict,
+            onCapture: _isProcessing
+                ? () {}
+                : () => _captureAndPredict(isDarkMode),
             onToggleCamera: _toggleCamera,
             isProcessing: _isProcessing,
           ),

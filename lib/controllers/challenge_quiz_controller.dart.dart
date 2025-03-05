@@ -17,7 +17,7 @@ class ChallengeQuizController {
   ChallengeQuizController({
     required this.difficulty,
     required this.mode,
-    this.totalQuestions = 5,
+    this.totalQuestions = 10,
   }) {
     _generateQuestions();
   }
@@ -88,7 +88,7 @@ class ChallengeQuizController {
     for (int i = 0; i < totalQuestions; i++) {
       int baseNumber = random.nextInt(9) + 1; // 1-9
       bool addToFirst = random.nextBool();
-      
+
       int firstNumber = addToFirst ? baseNumber + 1 : baseNumber;
       int secondNumber = addToFirst ? baseNumber : baseNumber + 1;
 
@@ -102,9 +102,18 @@ class ChallengeQuizController {
   }
 
   void _generateAdditionLevel3() {
-    // Teen Numbers (adding to 10)
+    // Generate and shuffle numbers 1-9
+    List<int> uniqueNumbers = List.generate(9, (index) => index + 1)
+      ..shuffle(random);
+
     for (int i = 0; i < totalQuestions; i++) {
-      int secondNumber = random.nextInt(9) + 1; // 1-9
+      int secondNumber =
+          uniqueNumbers[i % uniqueNumbers.length]; // Cycle through list
+
+      // Prevent consecutive duplicate numbers
+      if (i > 0 && questions.last.secondNumber == secondNumber) {
+        secondNumber = uniqueNumbers[(i + 1) % uniqueNumbers.length];
+      }
 
       questions.add(ChallengeQuizModel(
         firstNumber: 10,
@@ -165,7 +174,8 @@ class ChallengeQuizController {
     // Facts Within Ten
     for (int i = 0; i < totalQuestions; i++) {
       int firstNumber = random.nextInt(6) + 4; // 4-9
-      int secondNumber = random.nextInt(firstNumber - 1) + 1; // 1 to firstNumber-1
+      int secondNumber =
+          random.nextInt(firstNumber - 1) + 1; // 1 to firstNumber-1
 
       questions.add(ChallengeQuizModel(
         firstNumber: firstNumber,
@@ -177,9 +187,18 @@ class ChallengeQuizController {
   }
 
   void _generateSubtractionLevel2() {
-    // Taking From Ten
+    // Generate and shuffle numbers 1-9
+    List<int> uniqueNumbers = List.generate(9, (index) => index + 1)
+      ..shuffle(random);
+
     for (int i = 0; i < totalQuestions; i++) {
-      int secondNumber = random.nextInt(9) + 1; // 1-9
+      int secondNumber =
+          uniqueNumbers[i % uniqueNumbers.length]; // Cycle through list
+
+      // Prevent consecutive duplicate numbers
+      if (i > 0 && questions.last.secondNumber == secondNumber) {
+        secondNumber = uniqueNumbers[(i + 1) % uniqueNumbers.length];
+      }
 
       questions.add(ChallengeQuizModel(
         firstNumber: 10,
@@ -259,7 +278,8 @@ class ChallengeQuizController {
     if (isCorrect) {
       score++;
     } else {
-      print('Incorrect! The correct answer is ${currentQuestion.correctAnswer}.');
+      print(
+          'Incorrect! The correct answer is ${currentQuestion.correctAnswer}.');
     }
 
     questions[currentQuestionIndex] = currentQuestion.copyWith(

@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
+import 'package:flutter_hands/base/widgets/drawer_button_menu.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_hands/screens/lesson/widgets/side_menu.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,7 +26,8 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserver {
+class _ProfileScreenState extends State<ProfileScreen>
+    with WidgetsBindingObserver {
   static const _storage = FlutterSecureStorage();
   Map<String, dynamic>? _scores;
   bool _isLoading = true;
@@ -67,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
 
   Future<void> _fetchScores() async {
     if (!mounted) return;
-    
+
     try {
       setState(() {
         _isLoading = true;
@@ -152,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     }
   }
 
-  Widget buildScoresTable() {
+  Widget buildScoresTable(isDarkMode) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -173,16 +177,19 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
 
     final recognition = _scores?['recognition'] ?? 0;
     final signing = _scores?['signing'] ?? 0;
-    final totalProgress = ((recognition + signing) / 200 * 100).toStringAsFixed(1);
+    final totalProgress =
+        ((recognition + signing) / 200 * 100).toStringAsFixed(1);
 
     return Table(
-      border: const TableBorder(
-        top: BorderSide(color: Colors.white),
-        bottom: BorderSide(color: Colors.white),
-        left: BorderSide(color: Colors.white),
-        right: BorderSide(color: Colors.white),
-        horizontalInside: BorderSide(color: Colors.white),
-        verticalInside: BorderSide(color: Colors.white),
+      border: TableBorder(
+        top: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
+        bottom: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
+        left: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
+        right: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
+        horizontalInside:
+            BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
+        verticalInside:
+            BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
       ),
       columnWidths: const {
         0: FlexColumnWidth(2),
@@ -196,8 +203,8 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
               child: Center(
                 child: Text(
                   'Quiz',
-                  style: AppStyles.headLineStyle2.copyWith(
-                    color: Colors.white,
+                  style: AppStyles.getHeadLineStyle2(isDarkMode).copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black87,
                     fontSize: 24,
                   ),
                 ),
@@ -208,8 +215,8 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
               child: Center(
                 child: Text(
                   'Scores',
-                  style: AppStyles.headLineStyle2.copyWith(
-                    color: Colors.white,
+                  style: AppStyles.getHeadLineStyle2(isDarkMode).copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black87,
                     fontSize: 24,
                   ),
                 ),
@@ -219,11 +226,11 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         ),
         TableRow(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(8.0),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Recognition Practice',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: AppStyles.getParagraph1(isDarkMode),
               ),
             ),
             Center(
@@ -231,7 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   recognition.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  style: AppStyles.getParagraph1(isDarkMode),
                 ),
               ),
             ),
@@ -239,11 +246,11 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         ),
         TableRow(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(8.0),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Signing Practice',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: AppStyles.getParagraph1(isDarkMode),
               ),
             ),
             Center(
@@ -251,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   signing.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  style: AppStyles.getParagraph1(isDarkMode),
                 ),
               ),
             ),
@@ -259,16 +266,17 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         ),
         TableRow(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Total Progress', style: TextStyle(color: Colors.white, fontSize: 18)),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('Total Progress',
+                  style: AppStyles.getParagraph1(isDarkMode)),
             ),
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '$totalProgress%',
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  style: AppStyles.getParagraph1(isDarkMode),
                 ),
               ),
             ),
@@ -281,79 +289,56 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(color: AppStyles.backgroundColor),
-          height: screenHeight,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      const SizedBox(height: 20),
-                      buildProfileImage(),
-                      const SizedBox(height: 16),
-                      Text(
-                        widget.name,
-                        style: AppStyles.headLineStyle1,
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Scaffold(
+              endDrawer: const SideMenu(),
+              body: Stack(
+                children: [
+                  buildProfileScreen(screenHeight, isDarkMode),
+                  const DrawerButtonMenu()
+                ],
+              ));
+        });
+  }
+
+  Widget buildProfileScreen(double screenHeight, isDarkMode) {
+    return SafeArea(
+      child: Container(
+        decoration:
+            BoxDecoration(color: AppStyles.getBackgroundColor(isDarkMode)),
+        height: screenHeight,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(height: 20),
+                    buildProfileImage(),
+                    const SizedBox(height: 16),
+                    Text(
+                      widget.name,
+                      style: AppStyles.getHeadLineStyle1(isDarkMode),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Level ${widget.level}",
+                      style: AppStyles.getHeadLineStyle1(isDarkMode).copyWith(
+                        fontSize: 24,
+                        color: AppStyles.khaki,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Level ${widget.level}",
-                        style: AppStyles.headLineStyle1.copyWith(
-                          fontSize: 24,
-                          color: AppStyles.khaki,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      buildScoresTable(),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    buildScoresTable(isDarkMode),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                Positioned(
-                  right: 0,
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        // Implement edit functionality here
-                      } else if (value == 'logout') {
-                        logoutUser(context);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                       return [
-                        const PopupMenuItem<String>(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit, color: Colors.black, size: 20),
-                              SizedBox(width: 8),
-                              Text('Edit Profile', style: TextStyle(color: Colors.black)),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'logout',
-                          child: Row(
-                            children: [
-                              Icon(Icons.exit_to_app, color: Colors.black, size: 20),
-                              SizedBox(width: 8),
-                              Text('Logout', style: TextStyle(color: Colors.black)),
-                            ],
-                          ),
-                        ),
-                      ];
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

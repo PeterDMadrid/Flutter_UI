@@ -3,11 +3,13 @@ import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/heading.dart';
 import 'package:flutter_hands/base/widgets/tip_box.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
+import 'package:flutter_hands/base/widgets/drawer_button_menu.dart';
+import 'package:flutter_hands/screens/lesson/widgets/side_menu.dart';
 import 'package:flutter_hands/screens/lesson/widgets/lesson_card.dart';
 import 'package:flutter_hands/screens/lesson/modules/two_digits_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/math_lesson_screen.dart';
 import 'package:flutter_hands/screens/lesson/modules/introduction/Introduction_screen.dart';
-import 'package:flutter_hands/screens/lesson/widgets/side_menu.dart';
 
 class LessonScreen extends StatefulWidget {
   const LessonScreen({super.key, required this.name});
@@ -21,22 +23,20 @@ class _LessonScreenState extends State<LessonScreen> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    
-    return Scaffold(
-        backgroundColor: AppStyles.backgroundColor,
-        appBar: AppBar(
-          title: const Text("Lesson",
-          style: TextStyle(color: Colors.white70),),
-          backgroundColor: const Color.fromARGB(255, 16, 68, 110),
-          ),
-        drawer: const SideMenu(),
-        body: Stack(
-          children: [
-            buildLessonCards(screenHeight),
-            const TipBox(staggerDelay: 1),
-          ],
-        )
-        );
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Scaffold(
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              endDrawer: const SideMenu(),
+              body: Stack(
+                children: [
+                  buildLessonCards(screenHeight),
+                  const TipBox(staggerDelay: 1),
+                  const DrawerButtonMenu(),
+                ],
+              ));
+        });
   }
 
   Widget buildLessonCards(double screenHeight) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
 
 enum MathMode { addition, subtraction }
@@ -67,84 +68,87 @@ class MathModeDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final levels = _getDifficultyLevels();
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppStyles.backgroundColor,
-              AppStyles.backgroundColor.withOpacity(0.9),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppStyles.boxShadowColor.withOpacity(0.6),
-              blurRadius: 15,
-              spreadRadius: 1,
-              offset: const Offset(0, 8),
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Select ${mode == MathMode.addition ? "Addition" : "Subtraction"} Level',
-                  style: AppStyles.headLineStyle2.copyWith(
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppStyles.getBackgroundColor(isDarkMode),
+                    AppStyles.getBackgroundColor(isDarkMode).withOpacity(0.9),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppStyles.boxShadowColor.withOpacity(0.6),
+                    blurRadius: 15,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Select ${mode == MathMode.addition ? "Addition" : "Subtraction"} Level',
+                        style: AppStyles.getHeadLineStyle2(isDarkMode).copyWith(
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 3,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ...List.generate(
+                        levels.length,
+                        (index) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index < levels.length - 1 ? 16.0 : 0,
+                          ),
+                          child: _ModeButton(
+                            title: _getDifficultyTitle(levels[index]),
+                            icon: _getDifficultyIcon(index + 1),
+                            level: "Level ${index + 1}",
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(
+                                context,
+                                '/challenge_quiz',
+                                arguments: {
+                                  'mode': mode,
+                                  'difficulty': levels[index],
+                                },
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
-                ...List.generate(
-                  levels.length,
-                  (index) => Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index < levels.length - 1 ? 16.0 : 0,
-                    ),
-                    child: _ModeButton(
-                      title: _getDifficultyTitle(levels[index]),
-                      icon: _getDifficultyIcon(index + 1),
-                      level: "Level ${index + 1}",
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(
-                          context,
-                          '/challenge_quiz',
-                          arguments: {
-                            'mode': mode,
-                            'difficulty': levels[index],
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
+        });
   }
 }
 
@@ -163,77 +167,81 @@ class _ModeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppStyles.myblue.withOpacity(0.7),
-              AppStyles.myblue.withOpacity(0.9),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.15),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 20,
-                    color: Colors.white,
-                  ),
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return GestureDetector(
+            onTap: onTap,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppStyles.getMyBlue(isDarkMode).withOpacity(0.7),
+                    AppStyles.getMyBlue(isDarkMode).withOpacity(0.9),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  level,
-                  style: AppStyles.paragraph1.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDarkMode ? Colors.white.withOpacity(0.15) : Colors.black87.withOpacity(0.15),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 20,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: AppStyles.paragraph1.copyWith(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.85),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isDarkMode ? Colors.white.withOpacity(0.15) : Colors.black87.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 20,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        level,
+                        style: AppStyles.getParagraph1(isDarkMode).copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 20,
+                        color: isDarkMode ? Colors.white.withOpacity(0.7) : Colors.black87.withOpacity(0.7),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
+                    style: AppStyles.getParagraph1(isDarkMode).copyWith(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.white.withOpacity(0.85) : Colors.black87.withOpacity(0.85),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 }

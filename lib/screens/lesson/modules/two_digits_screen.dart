@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
 import 'package:flutter_hands/screens/lesson/widgets/digit_animation.dart';
@@ -152,7 +153,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     );
   }
 
-  Widget _buildTextSequence() {
+  Widget _buildTextSequence(isDarkMode) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(
@@ -164,8 +165,11 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
             child: ReadingEffect(
               text: _processText(_controller.state.currentTexts[i].text),
               style: isCurrentText
-                  ? AppStyles.headLineStyle2
-                  : AppStyles.headLineStyle2.copyWith(color: Colors.white54),
+                  ? AppStyles.getHeadLineStyle2(isDarkMode)
+                  : isDarkMode
+                      ? AppStyles.headLineStyle2.copyWith(color: Colors.white54)
+                      : AppStyles.lightHeadLineStyle2.copyWith(
+                          color: const Color.fromARGB(137, 17, 17, 17)),
               speed: _animationSpeed,
               animate: isCurrentText,
               onAnimationComplete: isCurrentText
@@ -180,41 +184,48 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppStyles.backgroundColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      backgroundColor: AppStyles.backgroundColor,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          GestureDetector(
-            onTap: _controller.handleTap,
-            behavior: HitTestBehavior.opaque,
-            child: SafeArea(
-              child: ListView(
-                padding: const EdgeInsets.all(_defaultPadding),
-                children: [
-                  _buildTextSequence(),
-                  if (_controller.state.showGif) ...[
-                    const SizedBox(height: _gifSpacing),
-                    if (_currentGif == 0)
-                      _buildGifDisplay(_numberString[0], true)
-                    else if (_currentGif == 1)
-                      _buildGifDisplay(_numberString[1], false),
-                    DigitAnimation(
-                        text: _numberString,
-                        speed: 3000,
-                        style: AppStyles.headLineStyle2.copyWith(fontSize: 64)),
-                  ],
-                  if (_controller.state.showContinue) const PulsingEffect(),
-                ],
-              ),
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              iconTheme: IconThemeData(
+                  color: isDarkMode ? Colors.white : Colors.black87),
             ),
-          ),
-        ],
-      ),
-    );
+            backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                GestureDetector(
+                  onTap: _controller.handleTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: SafeArea(
+                    child: ListView(
+                      padding: const EdgeInsets.all(_defaultPadding),
+                      children: [
+                        _buildTextSequence(isDarkMode),
+                        if (_controller.state.showGif) ...[
+                          const SizedBox(height: _gifSpacing),
+                          if (_currentGif == 0)
+                            _buildGifDisplay(_numberString[0], true)
+                          else if (_currentGif == 1)
+                            _buildGifDisplay(_numberString[1], false),
+                          DigitAnimation(
+                              text: _numberString,
+                              speed: 3000,
+                              style: AppStyles.getHeadLineStyle2(isDarkMode)
+                                  .copyWith(fontSize: 64)),
+                        ],
+                        if (_controller.state.showContinue)
+                          const PulsingEffect(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
   }
 }

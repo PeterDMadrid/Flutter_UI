@@ -5,6 +5,7 @@ import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
@@ -74,39 +75,41 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     });
   }
 
-  void _handleNext() {
-    setState(() {
-      if (!_controller.isQuizFinished) {
-        _controller.nextQuestion();
-        _selectedChoice = null;
-        _showResult = false;
-        _showNextButton = false;
-        _isAnswerLocked = false;
-      } else {
-        _showResults();
-      }
-    });
+  _handleNext(isDarkMode) {
+    return () {
+      setState(() {
+        if (!_controller.isQuizFinished) {
+          _controller.nextQuestion();
+          _selectedChoice = null;
+          _showResult = false;
+          _showNextButton = false;
+          _isAnswerLocked = false;
+        } else {
+          _showResults(isDarkMode);
+        }
+      });
+    };
   }
 
   static Future<String?> getToken() async {
     return await _storage.read(key: 'token');
   }
 
-  void _showResults() async {
+  void _showResults(isDarkMode) async {
     await _sendRecognitionScoreToAPI(_controller.score);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppStyles.backgroundColor,
+        backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
         title: Text(
           'Quiz Complete!',
-          style: AppStyles.headLineStyle2,
+          style: AppStyles.getHeadLineStyle2(isDarkMode),
         ),
         content: Text(
           'Your score: ${_controller.score}/${RecognitionController.totalQuestions}',
-          style: AppStyles.paragraph1,
+          style: AppStyles.getParagraph1(isDarkMode),
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -117,7 +120,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
             },
             child: Text(
               'Done',
-              style: AppStyles.headLineStyle1
+              style: AppStyles.getHeadLineStyle1(isDarkMode)
                   .copyWith(color: AppStyles.buttonColor),
             ),
           ),
@@ -167,84 +170,90 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
     final currentQuestion =
         _controller.questions[_controller.currentQuestionIndex];
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recognition Practice'),
-        backgroundColor: AppStyles.backgroundColor,
-        foregroundColor: AppStyles.textColor,
-      ),
-      body: Container(
-        decoration: BoxDecoration(color: AppStyles.backgroundColor),
-        height: screenHeight,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Question ${_controller.currentQuestionIndex + 1}/${RecognitionController.totalQuestions}',
-                style: AppStyles.headLineStyle2,
-              ),
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Recognition Practice'),
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              foregroundColor: AppStyles.getTextColor(isDarkMode),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            Center(
-              child: Text(
-                currentQuestion.correctNumber.toString(),
-                style: AppStyles.headLineStyle1.copyWith(fontSize: 80),
-              ),
-            ),
-            Expanded(
+            body: Container(
+              decoration: BoxDecoration(
+                  color: AppStyles.getBackgroundColor(isDarkMode)),
+              height: screenHeight,
               child: Column(
                 children: [
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisSpacing: 2.0,
-                      mainAxisSpacing: 2.0,
-                      crossAxisCount: 2,
-                      childAspectRatio: 1,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: currentQuestion.choices.map((choice) {
-                        return ChoiceCard(
-                          choice: choice.toString(),
-                          onPressed: _isAnswerLocked
-                              ? () {}
-                              : () => _handleAnswer(choice),
-                          isSelected: _selectedChoice == choice,
-                          isCorrect: currentQuestion.correctNumber == choice,
-                          showResult: _showResult,
-                        );
-                      }).toList(),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Question ${_controller.currentQuestionIndex + 1}/${RecognitionController.totalQuestions}',
+                      style: AppStyles.getHeadLineStyle2(isDarkMode),
                     ),
                   ),
-                  if (_showNextButton) ...[
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 60),
-                      child: ElevatedButton(
-                        onPressed: _handleNext,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppStyles.buttonColor,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          'Next Question',
-                          style: AppStyles.headLineStyle2.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                  SizedBox(height: screenHeight * 0.02),
+                  Center(
+                    child: Text(
+                      currentQuestion.correctNumber.toString(),
+                      style: AppStyles.getHeadLineStyle1(isDarkMode)
+                          .copyWith(fontSize: 80),
                     ),
-                  ],
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: GridView.count(
+                            crossAxisSpacing: 2.0,
+                            mainAxisSpacing: 2.0,
+                            crossAxisCount: 2,
+                            childAspectRatio: 1,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: currentQuestion.choices.map((choice) {
+                              return ChoiceCard(
+                                choice: choice.toString(),
+                                onPressed: _isAnswerLocked
+                                    ? () {}
+                                    : () => _handleAnswer(choice),
+                                isSelected: _selectedChoice == choice,
+                                isCorrect:
+                                    currentQuestion.correctNumber == choice,
+                                showResult: _showResult,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        if (_showNextButton) ...[
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 60),
+                            child: ElevatedButton(
+                              onPressed: _handleNext(isDarkMode),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppStyles.buttonColor,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 40, vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                'Next Question',
+                                style: AppStyles.headLineStyle2.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 }
