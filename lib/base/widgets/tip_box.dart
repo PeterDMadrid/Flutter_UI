@@ -78,6 +78,6 @@ class TipBox extends StatelessWidget {
           ),
         ),
       ),
-    );;
+    );
   }
 }
