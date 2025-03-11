@@ -3,6 +3,7 @@ import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/number_selection.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/screens/lesson/widgets/intro_text.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
@@ -112,68 +113,85 @@ class _IntroductionState extends State<Introduction> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppStyles.backgroundColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      backgroundColor: AppStyles.backgroundColor,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          GestureDetector(
-            onTap: _controller.handleTap,
-            behavior: HitTestBehavior.opaque,
-            child: SafeArea(
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  ...List.generate(_controller.state.currentTextIndex + 1, (i) {
-                    final isCurrentText = i == _controller.state.currentTextIndex;
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
-                      child: ReadingEffect(
-                        text: _processText(_controller.state.currentTexts[i].text),
-                        style: isCurrentText
-                            ? AppStyles.headLineStyle2
-                            : AppStyles.headLineStyle2
-                                .copyWith(color: Colors.white54),
-                        speed: 30,
-                        animate: isCurrentText,
-                        onAnimationComplete: isCurrentText
-                            ? () => setState(() => _controller.state.showContinue = true)
-                            : null,
-                      ),
-                    );
-                  }),
-                  if (_controller.state.showGif) ...[
-                    const SizedBox(height: 20),
-                    GifDisplay(
-                      gifPath: AppMedia.handGif[_controller.state.currentNumber - 1],
-                      staticFramePath: AppMedia.handFrames[_controller.state.currentNumber - 1],
-                      onGifDisplayed: () {
-                        Future.delayed(
-                          const Duration(milliseconds: 2500),
-                          () => setState(() => _controller.state.showContinue = true),
-                        );
-                      },
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              iconTheme: IconThemeData(
+                  color: isDarkMode ? Colors.white : Colors.black87),
+            ),
+            backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                GestureDetector(
+                  onTap: _controller.handleTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: SafeArea(
+                    child: ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
+                        ...List.generate(_controller.state.currentTextIndex + 1,
+                            (i) {
+                          final isCurrentText =
+                              i == _controller.state.currentTextIndex;
+                          return Padding(
+                            padding:
+                                EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
+                            child: ReadingEffect(
+                              text: _processText(
+                                  _controller.state.currentTexts[i].text),
+                              style: isCurrentText
+                                  ? AppStyles.getHeadLineStyle2(isDarkMode)
+                                  : isDarkMode
+                                      ? AppStyles.headLineStyle2
+                                          .copyWith(color: Colors.white54)
+                                      : AppStyles.lightHeadLineStyle2
+                                          .copyWith(color: const Color.fromARGB(137, 17, 17, 17)),
+                              speed: 30,
+                              animate: isCurrentText,
+                              onAnimationComplete: isCurrentText
+                                  ? () => setState(() =>
+                                      _controller.state.showContinue = true)
+                                  : null,
+                            ),
+                          );
+                        }),
+                        if (_controller.state.showGif) ...[
+                          const SizedBox(height: 20),
+                          GifDisplay(
+                            gifPath: AppMedia
+                                .handGif[_controller.state.currentNumber - 1],
+                            staticFramePath: AppMedia.handFrames[
+                                _controller.state.currentNumber - 1],
+                            onGifDisplayed: () {
+                              Future.delayed(
+                                const Duration(milliseconds: 2500),
+                                () => setState(() =>
+                                    _controller.state.showContinue = true),
+                              );
+                            },
+                          ),
+                        ],
+                        if (_controller.state.showContinue)
+                          const PulsingEffect(),
+                        const SizedBox(height: 80),
+                      ],
                     ),
-                  ],
-                  if (_controller.state.showContinue) const PulsingEffect(),
-                  const SizedBox(height: 80),
-                ],
-              ),
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  bottom: 16,
+                  child: NumberSelection(
+                    onNumberSelected: _controller.handleNumberSelection,
+                  ),
+                ),
+              ],
             ),
-          ),
-          Positioned(
-            left: 16,
-            bottom: 16,
-            child: NumberSelection(
-              onNumberSelected: _controller.handleNumberSelection,
-            ),
-          ),
-        ],
-      ),
-    );
+          );
+        });
   }
 }

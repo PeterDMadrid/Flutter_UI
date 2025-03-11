@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_hands/base/widgets/okay_button.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/image_carousel.dart';
+import 'package:flutter_hands/base/res/global/theme_provider.dart';
 
 class Instructions extends StatefulWidget {
   const Instructions({
@@ -36,63 +37,67 @@ class _InstructionsState extends State<Instructions> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    return Material(
-      color: AppStyles.textColor,
-      child: Container(
-        decoration: BoxDecoration(color: AppStyles.backgroundColor),
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.all(32),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppStyles.myblue,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+    return ValueListenableBuilder(
+        valueListenable: ThemeManager().isDarkModeNotifier,
+        builder: (context, isDarkMode, child) {
+          return Material(
+            color: AppStyles.getTextColor(isDarkMode),
+            child: Container(
+              decoration: BoxDecoration(color: AppStyles.getBackgroundColor(isDarkMode)),
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppStyles.getMyBlue(isDarkMode),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Instructions', style: AppStyles.getHeadLineStyle2(isDarkMode).copyWith(color: const Color.fromARGB(255, 141, 61, 0))),
+                      const SizedBox(height: 16),
+                      Text(widget.instructionContent,
+                          style: AppStyles.getParagraph1(isDarkMode)),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: screenHeight * 0.35,
+                        child: ImageCarousel(images: widget.images),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        widget.bottomInstruction,
+                        style: AppStyles.getParagraph1(isDarkMode),
+                      ),
+                      const SizedBox(height: 24),
+                      OkayButton(onProceed: handleExit)
+                    ],
+                  ),
+                )
+                    .animate()
+                    .slideY(
+                        begin: -1,
+                        end: 0,
+                        duration: 500.ms,
+                        curve: Curves.easeOutBack)
+                    .animate(target: isExiting ? 1 : 0)
+                    .slideY(
+                      begin: 0,
+                      end: -1,
+                      duration: 500.ms,
+                      curve: Curves.easeInBack,
+                    ),
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Instructions', style: AppStyles.headLineStyle2),
-                const SizedBox(height: 16),
-                Text(widget.instructionContent, style: AppStyles.paragraph1),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: screenHeight * 0.35,
-                  child: ImageCarousel(images: widget.images),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  widget.bottomInstruction,
-                  style: AppStyles.paragraph1,
-                ),
-                const SizedBox(height: 24),
-                OkayButton(onProceed: handleExit)
-              ],
-            ),
-          )
-          .animate()
-          .slideY(
-            begin: -1,
-            end: 0,
-            duration: 500.ms,
-            curve: Curves.easeOutBack
-          )
-          .animate(target: isExiting ? 1 : 0)
-          .slideY(
-            begin: 0,
-            end: -1,
-            duration: 500.ms,
-            curve: Curves.easeInBack,
-          ),
-        ),
-      ),
-    );
+          );
+        });
   }
 }
