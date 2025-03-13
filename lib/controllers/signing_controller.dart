@@ -1,8 +1,7 @@
-import 'dart:math';
 import 'package:flutter_hands/models/signing_model.dart';
 
 class SigningController {
-  static const int totalQuestions = 5;
+  static const int totalQuestions = 10;
 
   int currentQuestionIndex = 0;
   int score = 0;
@@ -12,16 +11,15 @@ class SigningController {
     _generateQuestions();
   }
 
-  _generateQuestions() {
-    final random = Random();
-    final allNumbers = List<int>.generate(5, (_) => random.nextInt(10));
+_generateQuestions() {
+  final allNumbers = List<int>.generate(10, (index) => index)..shuffle();
 
-    for (int i = 0; i < totalQuestions; i++) {
-      final correctNumber = allNumbers[i];
+  for (int i = 0; i < totalQuestions; i++) {
+    final correctNumber = allNumbers[i];
 
-      questions.add(SigningModel(correctNumber: correctNumber));
-    }
+    questions.add(SigningModel(correctNumber: correctNumber));
   }
+}
 
   bool checkAnswer(int handSign) {
     final currentQuestion = questions[currentQuestionIndex];

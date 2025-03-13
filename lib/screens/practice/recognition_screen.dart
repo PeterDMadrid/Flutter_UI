@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
+import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
 
@@ -46,17 +48,17 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   void _showInstructions() {
     _overlayEntry = OverlayEntry(
       builder: (context) => Instructions(
-        onGotIt: () {
-          _overlayEntry?.remove();
-          _overlayEntry = null;
-        },
-        instructionContent: instructions,
-        bottomInstruction: bottomInstructions,
-        images: const [
-          'assets/instructions/recognition_instruction_1.jpg',
-          'assets/instructions/recognition_instruction_2.jpg',
-        ],
-      ),
+          onGotIt: () {
+            _overlayEntry?.remove();
+            _overlayEntry = null;
+          },
+          instructionContent: instructions,
+          bottomInstruction: bottomInstructions,
+          images: const [
+            'assets/instructions/recognition_instruction_1.jpg',
+            'assets/instructions/recognition_instruction_2.jpg',
+          ],
+          gifInstruction: AppMedia.practiceTeacherGif),
     );
 
     Overlay.of(context).insert(_overlayEntry!);
@@ -75,20 +77,18 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     });
   }
 
-  _handleNext(isDarkMode) {
-    return () {
-      setState(() {
-        if (!_controller.isQuizFinished) {
-          _controller.nextQuestion();
-          _selectedChoice = null;
-          _showResult = false;
-          _showNextButton = false;
-          _isAnswerLocked = false;
-        } else {
-          _showResults(isDarkMode);
-        }
-      });
-    };
+  void _handleNext(isDarkMode) {
+    setState(() {
+      if (!_controller.isQuizFinished) {
+        _controller.nextQuestion();
+        _selectedChoice = null;
+        _showResult = false;
+        _showNextButton = false;
+        _isAnswerLocked = false;
+      } else {
+        _showResults(isDarkMode);
+      }
+    });
   }
 
   static Future<String?> getToken() async {
@@ -228,23 +228,9 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                         if (_showNextButton) ...[
                           Container(
                             margin: const EdgeInsets.only(bottom: 60),
-                            child: ElevatedButton(
-                              onPressed: _handleNext(isDarkMode),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppStyles.buttonColor,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 40, vertical: 15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                'Next Question',
-                                style: AppStyles.headLineStyle2.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                            child: NextQuestionButton(
+                                text: "Next Question",
+                                onPressed: () => _handleNext(isDarkMode)),
                           ),
                         ],
                       ],

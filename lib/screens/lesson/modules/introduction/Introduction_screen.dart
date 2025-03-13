@@ -1,5 +1,7 @@
+import 'package:gif/gif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/number_selection.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
@@ -18,8 +20,10 @@ class Introduction extends StatefulWidget {
   State<Introduction> createState() => _IntroductionState();
 }
 
-class _IntroductionState extends State<Introduction> {
+class _IntroductionState extends State<Introduction>
+    with TickerProviderStateMixin {
   late final LessonController _controller;
+  late final GifController _teacherController;
 
   final List<List<IntroText>> _numberSequences = [
     [
@@ -105,6 +109,7 @@ class _IntroductionState extends State<Introduction> {
       setState: setState,
       numberSequences: _numberSequences,
     );
+    _teacherController = GifController(vsync: this);
   }
 
   String _processText(String text) {
@@ -112,7 +117,14 @@ class _IntroductionState extends State<Introduction> {
   }
 
   @override
+  void dispose() {
+    _teacherController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    double teacherSize = MediaQuery.of(context).size.width * 1;
     return ValueListenableBuilder(
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {
@@ -123,13 +135,13 @@ class _IntroductionState extends State<Introduction> {
                   color: isDarkMode ? Colors.white : Colors.black87),
             ),
             backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                GestureDetector(
-                  onTap: _controller.handleTap,
-                  behavior: HitTestBehavior.opaque,
-                  child: SafeArea(
+            body: GestureDetector(
+              onTap: _controller.handleTap,
+              behavior: HitTestBehavior.translucent,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  SafeArea(
                     child: ListView(
                       padding: const EdgeInsets.all(16.0),
                       children: [
@@ -148,8 +160,9 @@ class _IntroductionState extends State<Introduction> {
                                   : isDarkMode
                                       ? AppStyles.headLineStyle2
                                           .copyWith(color: Colors.white54)
-                                      : AppStyles.lightHeadLineStyle2
-                                          .copyWith(color: const Color.fromARGB(137, 17, 17, 17)),
+                                      : AppStyles.lightHeadLineStyle2.copyWith(
+                                          color: const Color.fromARGB(
+                                              137, 17, 17, 17)),
                               speed: 30,
                               animate: isCurrentText,
                               onAnimationComplete: isCurrentText
@@ -181,15 +194,57 @@ class _IntroductionState extends State<Introduction> {
                       ],
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 16,
-                  bottom: 16,
-                  child: NumberSelection(
-                    onNumberSelected: _controller.handleNumberSelection,
+                  Positioned(
+                    left: 16,
+                    bottom: 16,
+                    child: NumberSelection(
+                      onNumberSelected: _controller.handleNumberSelection,
+                    ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    right: -140,
+                    bottom: -40,
+                    child: SizedBox(
+                      width: teacherSize,
+                      height: teacherSize,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(200),
+                        child: !_controller.state.showGif
+                            ? (!_controller.state.showContinue
+                                ? Gif(
+                                    image:
+                                        const AssetImage(AppMedia.teacherGif),
+                                    autostart: Autostart.loop,
+                                    controller: _teacherController,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.asset(
+                                    AppMedia.teacherRest,
+                                    fit: BoxFit.cover,
+                                  ))
+                            : Image.asset(
+                                AppMedia.teacherRest,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                  ).animate(
+                    target: _controller.state.showGif ? 1 : 0,
+                    effects: [
+                      const ScaleEffect(
+                        begin: Offset(1, 1),
+                        end: Offset(0.6, 0.6),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                      const MoveEffect(
+                        begin: Offset(0, -50),
+                        end: Offset(0, 100),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           );
         });

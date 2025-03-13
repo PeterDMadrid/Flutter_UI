@@ -4,6 +4,7 @@ import 'package:gif/gif.dart';
 import '../widgets/intro_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
@@ -33,6 +34,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
 
   late final LessonController _controller;
   late final GifController _gifController;
+  late final GifController _teacherController;
 
   final List<List<IntroText>> _numberSequences = [
     [
@@ -61,12 +63,15 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
 
     _gifController = GifController(vsync: this);
     _gifController.addListener(_handleGifCompletion);
+
+    _teacherController = GifController(vsync: this);
   }
 
   @override
   void dispose() {
     _gifController.removeListener(_handleGifCompletion);
     _gifController.dispose();
+    _teacherController.dispose();
     super.dispose();
   }
 
@@ -184,6 +189,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
 
   @override
   Widget build(BuildContext context) {
+    double teacherSize = MediaQuery.of(context).size.width * 1;
     return ValueListenableBuilder(
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {
@@ -194,13 +200,13 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                   color: isDarkMode ? Colors.white : Colors.black87),
             ),
             backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                GestureDetector(
-                  onTap: _controller.handleTap,
-                  behavior: HitTestBehavior.opaque,
-                  child: SafeArea(
+            body: GestureDetector(
+              onTap: _controller.handleTap,
+              behavior: HitTestBehavior.translucent,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  SafeArea(
                     child: ListView(
                       padding: const EdgeInsets.all(_defaultPadding),
                       children: [
@@ -222,8 +228,50 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    right: -140,
+                    bottom: -40,
+                    child: SizedBox(
+                      width: teacherSize,
+                      height: teacherSize,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(200),
+                        child: !_controller.state.showGif
+                            ? (!_controller.state.showContinue
+                                ? Gif(
+                                    image:
+                                        const AssetImage(AppMedia.teacherGif),
+                                    autostart: Autostart.loop,
+                                    controller: _teacherController,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.asset(
+                                    AppMedia.teacherRest,
+                                    fit: BoxFit.cover,
+                                  ))
+                            : Image.asset(
+                                AppMedia.teacherRest,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                  ).animate(
+                    target: _controller.state.showGif ? 1 : 0,
+                    effects: [
+                      const ScaleEffect(
+                        begin: Offset(1, 1),
+                        end: Offset(0.6, 0.6),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                      const MoveEffect(
+                        begin: Offset(0, -50),
+                        end: Offset(0, 100),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           );
         });

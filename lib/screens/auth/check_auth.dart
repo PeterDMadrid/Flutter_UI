@@ -1,4 +1,3 @@
-import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/bottom_navbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
@@ -52,6 +51,7 @@ class _CheckAuthState extends State<CheckAuth> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppStyles.backgroundColor,
