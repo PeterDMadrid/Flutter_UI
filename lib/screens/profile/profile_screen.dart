@@ -9,6 +9,8 @@ import 'package:flutter_hands/base/widgets/drawer_button_menu.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/screens/lesson/widgets/side_menu.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
+import 'package:flutter_hands/screens/profile/widgets/indicator_dots.dart';
+import 'package:flutter_hands/screens/profile/widgets/heading_profile.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String name;
@@ -53,11 +55,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  // Add this method to handle navigation focus
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Set up a focus node to detect when the screen gains focus
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _fetchScores();
@@ -121,225 +121,472 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget buildProfileImage() {
-    if (widget.profilePicture != null) {
-      return CircleAvatar(
-        radius: 50,
-        backgroundColor: Colors.grey[200],
-        child: ClipOval(
-          child: Image.network(
-            widget.profilePicture!,
-            width: 100,
-            height: 100,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset(
-                AppMedia.defaultProfilePhoto,
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              );
-            },
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            },
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-        ),
-      );
-    } else {
-      return const CircleAvatar(
-        radius: 50,
-        backgroundImage: AssetImage(AppMedia.defaultProfilePhoto),
-      );
-    }
+        ],
+      ),
+      child: widget.profilePicture != null
+          ? CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.grey[200],
+              child: ClipOval(
+                child: Image.network(
+                  widget.profilePicture!,
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      AppMedia.defaultProfilePhoto,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                ),
+              ),
+            )
+          : const CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage(AppMedia.defaultProfilePhoto),
+            ),
+    );
   }
 
-  Widget buildScoresTable(isDarkMode) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget buildProgressBar(
+      String title, int score, int maxScore, bool isDarkMode) {
+    final double progress = score / maxScore;
 
-    if (_error != null) {
-      return Center(
-        child: Column(
-          children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
-            ElevatedButton(
-              onPressed: _fetchScores,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final recognition = _scores?['recognition'] ?? 0;
-    final signing = _scores?['signing'] ?? 0;
-    final totalProgress =
-        ((recognition + signing) / 200 * 100).toStringAsFixed(1);
-
-    return Table(
-      border: TableBorder(
-        top: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
-        bottom: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
-        left: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
-        right: BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
-        horizontalInside:
-            BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
-        verticalInside:
-            BorderSide(color: isDarkMode ? Colors.white : Colors.black87),
-      ),
-      columnWidths: const {
-        0: FlexColumnWidth(2),
-        1: FlexColumnWidth(1),
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TableRow(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Text(
-                  'Quiz',
-                  style: AppStyles.getHeadLineStyle2(isDarkMode).copyWith(
-                    color: isDarkMode ? Colors.white : Colors.black87,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Text(
-                  'Scores',
-                  style: AppStyles.getHeadLineStyle2(isDarkMode).copyWith(
-                    color: isDarkMode ? Colors.white : Colors.black87,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
+            Text(title,
+                style:
+                    AppStyles.paragraph2.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              "$score / $maxScore",
+              style: AppStyles.paragraph2,
             ),
           ],
         ),
-        TableRow(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Recognition Practice',
-                style: AppStyles.getParagraph1(isDarkMode),
-              ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 10,
+            backgroundColor:
+                isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              isDarkMode ? AppStyles.myblue : AppStyles.lightMyBlue,
             ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  recognition.toString(),
-                  style: AppStyles.getParagraph1(isDarkMode),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-        TableRow(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Signing Practice',
-                style: AppStyles.getParagraph1(isDarkMode),
-              ),
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  signing.toString(),
-                  style: AppStyles.getParagraph1(isDarkMode),
-                ),
-              ),
-            ),
-          ],
-        ),
-        TableRow(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Total Progress',
-                  style: AppStyles.getParagraph1(isDarkMode)),
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '$totalProgress%',
-                  style: AppStyles.getParagraph1(isDarkMode),
-                ),
-              ),
-            ),
-          ],
+        const SizedBox(height: 6),
+        Text(
+          "${(progress * 100).toStringAsFixed(1)}%",
+          style: AppStyles.paragraph2.copyWith(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
         ),
       ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    return ValueListenableBuilder(
-        valueListenable: ThemeManager().isDarkModeNotifier,
-        builder: (context, isDarkMode, child) {
-          return Scaffold(
-              endDrawer: const SideMenu(),
-              body: Stack(
-                children: [
-                  buildProfileScreen(screenHeight, isDarkMode),
-                  const DrawerButtonMenu()
-                ],
-              ));
-        });
-  }
+  Widget buildPracticeCard(bool isDarkMode) {
+    if (_scores == null) return const SizedBox.shrink();
 
-  Widget buildProfileScreen(double screenHeight, isDarkMode) {
-    return SafeArea(
-      child: Container(
-        decoration:
-            BoxDecoration(color: AppStyles.getBackgroundColor(isDarkMode)),
-        height: screenHeight,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Stack(
+    final recognition = _scores?['recognition'] ?? 0;
+    final signing = _scores?['signing'] ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkMode
+            ? AppStyles.myblue.withOpacity(0.5)
+            : AppStyles.myblue.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    const SizedBox(height: 20),
-                    buildProfileImage(),
-                    const SizedBox(height: 16),
-                    Text(
-                      widget.name,
-                      style: AppStyles.getHeadLineStyle1(isDarkMode),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Level ${widget.level}",
-                      style: AppStyles.getHeadLineStyle1(isDarkMode).copyWith(
-                        fontSize: 24,
-                        color: AppStyles.khaki,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    buildScoresTable(isDarkMode),
-                    const SizedBox(height: 20),
-                  ],
+              Icon(
+                Icons.sports_gymnastics,
+                color: AppStyles.lightMyBlue,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Practice",
+                style: AppStyles.paragraph1.copyWith(
+                  fontSize: 18,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          buildProgressBar("Recognition", recognition, 10, isDarkMode),
+          const SizedBox(height: 16),
+          buildProgressBar("Signing", signing, 10, isDarkMode),
+          const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Total Practice",
+                style: (isDarkMode
+                        ? AppStyles.headLineStyle2
+                        : AppStyles.lightHeadLineStyle2)
+                    .copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Text("${recognition + signing} / 20",
+                  style: AppStyles.paragraph2),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: (recognition + signing) / 20,
+              minHeight: 12,
+              backgroundColor:
+                  isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                AppStyles.khaki,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "${((recognition + signing) / 20 * 100).toStringAsFixed(1)}%",
+            style: AppStyles.paragraph2.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Add this to your class variables
+  PageController additionPageController = PageController();
+  PageController subtractionPageController = PageController();
+  int currentAdditionPage = 0;
+  int currentSubtractionPage = 0;
+
+  Widget buildChallengeCard(bool isDarkMode) {
+    if (_scores == null) return const SizedBox.shrink();
+
+    const int totalLevels = 6; 
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkMode
+            ? AppStyles.roseRed.withOpacity(0.5)
+            : AppStyles.roseRed.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.emoji_events,
+                color: AppStyles.khaki,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Challenge Scores",
+                style: AppStyles.paragraph1.copyWith(
+                  fontSize: 18,
+                ),
+              )
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Addition levels
+          SizedBox(
+            height: 70,
+            child: PageView.builder(
+              controller: additionPageController,
+              itemCount: totalLevels,
+              onPageChanged: (index) {
+                setState(() {
+                  currentAdditionPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final levelNumber = index + 1;
+                final levelScore = _scores?['addition$levelNumber'] ?? 0;
+
+                return buildProgressBar(
+                    "Addition: $levelNumber Score", levelScore, 10, isDarkMode);
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Indicator dots for Addition
+          IndicatorDots(
+              currentAdditionPage: currentAdditionPage,
+              totalLevels: totalLevels),
+
+          const SizedBox(height: 24),
+
+          // Subtraction levels
+          SizedBox(
+            height: 70,
+            child: PageView.builder(
+              controller: subtractionPageController,
+              itemCount: totalLevels,
+              onPageChanged: (index) {
+                setState(() {
+                  currentSubtractionPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final levelNumber = index + 1;
+                final levelScore = _scores?['subtraction$levelNumber'] ?? 0;
+
+                return buildProgressBar("Subtraction: $levelNumber Score",
+                    levelScore, 10, isDarkMode);
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Indicator dots for Subtraction
+          IndicatorDots(
+              currentAdditionPage: currentSubtractionPage,
+              totalLevels: totalLevels),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: ThemeManager().isDarkModeNotifier,
+      builder: (context, isDarkMode, child) {
+        return Scaffold(
+          backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+          endDrawer: const SideMenu(),
+          body: Stack(
+            children: [
+              _buildProfileContent(isDarkMode),
+              const DrawerButtonMenu()
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileContent(bool isDarkMode) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              buildProfileImage(),
+              const SizedBox(height: 16),
+              Text(
+                widget.name,
+                style: isDarkMode
+                    ? AppStyles.headLineStyle1
+                    : AppStyles.lightHeadLineStyle1,
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppStyles.khaki.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  "Level ${widget.level}",
+                  style: (isDarkMode
+                          ? AppStyles.headLineStyle1
+                          : AppStyles.lightHeadLineStyle1)
+                      .copyWith(
+                    fontSize: 20,
+                    color: AppStyles.khaki,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (_isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (_error != null)
+                Center(
+                  child: Text(
+                    _error!,
+                    style: isDarkMode
+                        ? AppStyles.paragraph1
+                        : AppStyles.lightParagraph1,
+                  ),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const HeadingProfile(headingText: "Scores"),
+                    buildPracticeCard(isDarkMode),
+                    buildChallengeCard(isDarkMode),
+                    const SizedBox(height: 16),
+                    const HeadingProfile(headingText: "Overall"),
+                    buildOverallProgressCard(isDarkMode),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildOverallProgressCard(bool isDarkMode) {
+    if (_scores == null) return const SizedBox.shrink();
+
+    final recognition = _scores?['recognition'] ?? 0;
+    final signing = _scores?['signing'] ?? 0;
+    final challenge = _scores?['challenge'] ?? 0;
+    final total = recognition + signing + challenge;
+    const maxTotal = 30;
+    final progress = total / maxTotal;
+
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDarkMode
+                ? [
+                    AppStyles.myblue.withOpacity(0.3),
+                    AppStyles.myblue.withOpacity(0.1),
+                  ]
+                : [
+                    AppStyles.lightMyBlue.withOpacity(0.3),
+                    AppStyles.lightMyBlue.withOpacity(0.1),
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.5)
+                  : Colors.grey.withOpacity(0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              "Total Scores",
+              style: isDarkMode
+                  ? AppStyles.headLineStyle2
+                  : AppStyles.lightHeadLineStyle2,
+            ),
+            const SizedBox(height: 16),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 12,
+                    backgroundColor: isDarkMode
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade200,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppStyles.khaki,
+                    ),
+                  ),
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "${(progress * 100).toStringAsFixed(1)}%",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode
+                            ? AppStyles.headlineColor
+                            : AppStyles.lightHeadlineColor,
+                      ),
+                    ),
+                    Text(
+                      "$total / $maxTotal",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDarkMode
+                            ? AppStyles.textColor
+                            : AppStyles.lightTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
