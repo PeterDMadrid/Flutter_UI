@@ -3,13 +3,16 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/main.dart';
 import 'package:vibration/vibration.dart';
+import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
+import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
+import 'package:flutter_hands/base/widgets/handsigns_camera_preview.dart';
 import 'package:flutter_hands/screens/challenge/widgets/mode_button.dart';
 import 'package:flutter_hands/screens/challenge/widgets/answer_display.dart';
 import 'package:flutter_hands/controllers/challenge_quiz_controller.dart.dart';
@@ -31,6 +34,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
   bool _isFrontCamera = false;
   String _errorMessage = '';
   bool _isInitialized = false;
+  bool _showNextButton = false;
 
   late List<int> currentAnswer = [];
   bool _isProcessing = false;
@@ -73,6 +77,9 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     });
   }
 
+  File? _capturedImageFile;
+  bool _showCapturedImage = false;
+
   Future<void> _captureAndPredict(isDarkMode) async {
     if (_isProcessing ||
         _cameraController == null ||
@@ -84,19 +91,31 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       setState(() {
         _isProcessing = true;
       });
+
       final XFile image = await _cameraController!.takePicture();
 
+      // Add a timeout to prevent indefinite waiting
       final prediction =
-          await ImagePredictionService.sendImageToAPI(File(image.path));
+          await ImagePredictionService.sendImageToAPI(File(image.path))
+              .timeout(const Duration(seconds: 5), onTimeout: () {
+        // Return a default value indicating no hand detected
+        return {
+          'prediction': -1,
+          'label': 'No hand detected',
+          'confidence': 0.0,
+          'handedness': 'Unknown'
+        };
+      });
 
       setState(() {
-        _prediction = prediction['prediction'] ?? 401;
+        _prediction = prediction['prediction'] ?? -1;
         _label = prediction['label'] ?? 'Unknown';
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
+        _isProcessing = false;
       });
 
-      if (_prediction != 401 && mounted) {
+      if (_prediction >= 0 && mounted) {
         setState(() {
           final currentQuestion =
               _quizController.questions[_quizController.currentQuestionIndex];
@@ -106,7 +125,9 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
           if (expectedLength == 1) {
             // For single-digit answers (easy mode)
             currentAnswer.add(_prediction);
-            _handleAnswer([currentAnswer[0]], isDarkMode); // Send only the first digit
+            _handleAnswer([currentAnswer[0]], isDarkMode);
+            _capturedImageFile = File(image.path);
+            _showCapturedImage = true;
           } else {
             // For double-digit answers (medium/hard mode)
             if (currentAnswer.isEmpty) {
@@ -114,9 +135,19 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
             } else if (currentAnswer.length == 1) {
               currentAnswer.add(_prediction);
               _handleAnswer(currentAnswer, isDarkMode);
+              _capturedImageFile = File(image.path);
+              _showCapturedImage = true;
             }
           }
         });
+      } else {
+        setState(() {
+          _showCapturedImage = false;
+          _capturedImageFile = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No hand detected. Please try again.')),
+        );
       }
 
       setState(() {
@@ -125,6 +156,8 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     } catch (e) {
       setState(() {
         _isProcessing = false;
+        _showCapturedImage = false;
+        _capturedImageFile = null;
       });
     }
   }
@@ -138,29 +171,36 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
 
     if (isCorrect) {
       _score++;
-      // Vibration feedback for correct answer
-      Vibration.vibrate(duration: 500); // Vibrate for 500 milliseconds
+      Vibration.vibrate(duration: 500);
     } else {
-      // Vibration feedback for incorrect answer
-      Vibration.vibrate(duration: 1000); // Vibrate for 1000 milliseconds
+      Vibration.vibrate(duration: 1000);
     }
+
+    setState(() {
+      _showNextButton = true;
+      _isProcessing = false;
+    });
 
     // Create the SnackBar message
     String message = isCorrect
         ? 'Correct!'
         : 'Incorrect! The correct answer is $correctAnswer.';
     showCustomSnackBar(context, isCorrect, message);
+  }
 
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        if (!_quizController.isQuizFinished) {
-          _isProcessing = false;
-          _quizController.nextQuestion();
-          currentAnswer.clear();
-        } else {
-          _showResults(isDarkMode);
-        }
-      });
+  void _handleNext(isDarkMode) {
+    setState(() {
+      _showCapturedImage = false;
+      _capturedImageFile = null;
+
+      if (!_quizController.isQuizFinished) {
+        _quizController.nextQuestion();
+        _isProcessing = false;
+        currentAnswer.clear();
+        _showNextButton = false;
+      } else {
+        _showResults(isDarkMode);
+      }
     });
   }
 
@@ -257,6 +297,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
         },
         instructionContent: instructions,
         bottomInstruction: bottomInstructions,
+        gifInstruction: AppMedia.practiceTeacherGif,
         images: mode == MathMode.addition
             ? const [
                 "assets/instructions/challenge_instruction_addition_1.JPG",
@@ -298,13 +339,14 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               foregroundColor: AppStyles.getTextColor(isDarkMode),
             ),
-            body: _buildBody(screenHeight, currentQuestion, expectedLength, isDarkMode),
+            body: _buildBody(
+                screenHeight, currentQuestion, expectedLength, isDarkMode),
           );
         });
   }
 
-  Widget _buildBody(
-      double screenHeight, final currentQuestion, int expectedLength, isDarkMode) {
+  Widget _buildBody(double screenHeight, final currentQuestion,
+      int expectedLength, isDarkMode) {
     if (_errorMessage.isNotEmpty) {
       return Center(
         child: Padding(
@@ -339,7 +381,8 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
         fit: StackFit.expand,
         children: [
           Container(
-            decoration: BoxDecoration(color: AppStyles.getBackgroundColor(isDarkMode)),
+            decoration:
+                BoxDecoration(color: AppStyles.getBackgroundColor(isDarkMode)),
             height: screenHeight,
             child: Column(
               children: [
@@ -357,23 +400,37 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
                   style: AppStyles.getHeadLineStyle1(isDarkMode),
                 )),
                 SizedBox(height: screenHeight * 0.025),
-                _buildCameraPreview(),
-                SizedBox(height: screenHeight * 0.025),
-                AnswerDisplay(
-                  currentAnswer: currentAnswer,
-                  expectedLength: expectedLength,
-                ),
+                Stack(children: [
+                  HandSignCameraPreview(
+                    isFrontCamera: _isFrontCamera,
+                    cameraController: _cameraController,
+                    capturedImageFile: _capturedImageFile,
+                    showCapturedImage: _showCapturedImage,
+                  ),
+                  Positioned(
+                    bottom: 30,
+                    left: 0,
+                    right: 0,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: AnswerDisplay(
+                        currentAnswer: currentAnswer,
+                        expectedLength: expectedLength,
+                      ),
+                    ),
+                  ),
+                ]),
               ],
             ),
           ),
-          CameraControls(
-            onCapture: _isProcessing
-                ? () {}
-                : () => _captureAndPredict(isDarkMode),
-            onToggleCamera: _toggleCamera,
-            isProcessing: _isProcessing,
-          ),
-          if (currentAnswer.isNotEmpty)
+          if (!_showNextButton)
+            CameraControls(
+              onCapture:
+                  _isProcessing ? () {} : () => _captureAndPredict(isDarkMode),
+              onToggleCamera: _toggleCamera,
+              isProcessing: _isProcessing,
+            ),
+          if (currentAnswer.isNotEmpty && !_showNextButton)
             Positioned(
                 bottom: 60,
                 right: 40,
@@ -382,20 +439,19 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
                   foregroundColor: AppStyles.getTextColor(isDarkMode),
                   onPressed: currentAnswer.isNotEmpty ? _clearAnswer : null,
                   child: const Icon(Icons.backspace_sharp),
-                ))
+                )),
+          if (_showNextButton)
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: NextQuestionButton(
+                    text: "Next Question",
+                    onPressed: () => _handleNext(isDarkMode)),
+              ),
+            ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCameraPreview() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 64.0),
-      child: AspectRatio(
-        aspectRatio: 2 / 3,
-        child: ClipRect(
-          child: CameraPreview(_cameraController!),
-        ),
       ),
     );
   }

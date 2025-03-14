@@ -2,10 +2,14 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import '../../main.dart';
+import 'package:gif/gif.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_hands/base/widgets/snackbar.dart';
+import 'package:vibration/vibration.dart';
+import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_hands/base/widgets/phrases.dart';
 import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
@@ -14,8 +18,11 @@ import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/controllers/signing_controller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_hands/base/res/global/global_variables.dart';
+import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
-import 'package:flutter_hands/screens/practice/widgets/hand_detection_smoother.dart';
+import 'package:flutter_hands/base/widgets/handsigns_camera_preview.dart';
+import 'package:flutter_hands/screens/practice/widgets/question_text_widget.dart';
+
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -25,13 +32,14 @@ class SigningScreen extends StatefulWidget {
 }
 
 class _SigningScreenState extends State<SigningScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   OverlayEntry? _overlayEntry;
   CameraController? _cameraController;
   bool _isFrontCamera = false;
   String _errorMessage = '';
   bool _isInitialized = false;
   late SigningController _signingController;
+  bool _showNextButton = false;
 
   bool _isProcessing = false;
   int _prediction = -1;
@@ -41,6 +49,11 @@ class _SigningScreenState extends State<SigningScreen>
 
   int _signingScore = 0;
   static const _storage = FlutterSecureStorage();
+
+  //teacher gif
+  bool showGif = false;
+  late final GifController _teacherController;
+  bool _lastAnswerCorrect = false;
 
   final String instructions =
       "Show your signing skills! Read the number and sign it correctly";
@@ -57,9 +70,13 @@ class _SigningScreenState extends State<SigningScreen>
       _showInstructions();
     });
     _signingController = SigningController();
+    _teacherController = GifController(vsync: this);
   }
 
-  Future<void> _captureAndPredict(isDarkMode) async {
+  File? _capturedImageFile;
+  bool _showCapturedImage = false;
+
+  Future<void> _captureAndPredict(bool isDarkMode) async {
     if (_isProcessing ||
         _cameraController == null ||
         !_cameraController!.value.isInitialized) {
@@ -73,22 +90,56 @@ class _SigningScreenState extends State<SigningScreen>
 
       final XFile image = await _cameraController!.takePicture();
 
+      setState(() {
+        _capturedImageFile = File(image.path);
+        _showCapturedImage = true;
+      });
+
+      // Add a timeout to prevent indefinite waiting
       final prediction =
-          await ImagePredictionService.sendImageToAPI(File(image.path));
+          await ImagePredictionService.sendImageToAPI(File(image.path))
+              .timeout(const Duration(seconds: 5), onTimeout: () {
+        // Return a default value indicating no hand detected
+        return {
+          'prediction': -1,
+          'label': 'No hand detected',
+          'confidence': 0.0,
+          'handedness': 'Unknown'
+        };
+      });
 
       setState(() {
-        _prediction = prediction['prediction'] ?? 401;
+        _prediction = prediction['prediction'] ?? -1;
         _label = prediction['label'] ?? 'Unknown';
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
+        _isProcessing = false;
       });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleAnswer(_prediction, isDarkMode);
-      });
+
+      // Only handle valid predictions
+      if (_prediction >= 0) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleAnswer(_prediction, isDarkMode);
+        });
+      } else {
+        setState(() {
+          _showCapturedImage = false;
+          _capturedImageFile = null;
+        });
+        // Show a message to the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No hand detected. Please try again.')),
+        );
+      }
     } catch (e) {
       setState(() {
         _isProcessing = false;
+        _showCapturedImage = false;
+        _capturedImageFile = null;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
     }
   }
 
@@ -128,8 +179,6 @@ class _SigningScreenState extends State<SigningScreen>
     }
   }
 
-  final handDetectionSmoother = HandDetectionSmoother(windowSize: 5);
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -163,43 +212,54 @@ class _SigningScreenState extends State<SigningScreen>
   void _showInstructions() {
     _overlayEntry = OverlayEntry(
       builder: (context) => Instructions(
-        onGotIt: () {
-          _overlayEntry?.remove();
-          _overlayEntry = null;
-        },
-        instructionContent: instructions,
-        bottomInstruction: bottomInstructions,
-        images: const [
-          'assets/instructions/signing_instruction_1.JPG',
-          'assets/instructions/signing_instruction_2.JPG',
-          'assets/instructions/signing_instruction_3.JPG',
-        ],
-      ),
+          onGotIt: () {
+            _overlayEntry?.remove();
+            _overlayEntry = null;
+          },
+          instructionContent: instructions,
+          bottomInstruction: bottomInstructions,
+          images: const [
+            'assets/instructions/signing_instruction_1.JPG',
+            'assets/instructions/signing_instruction_2.JPG',
+            'assets/instructions/signing_instruction_3.JPG',
+          ],
+          gifInstruction: AppMedia.practiceTeacherGif),
     );
 
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _handleAnswer(int handSign, isDarkMode) {
+  void _handleAnswer(int handSign, bool isDarkMode) {
+    final isCorrect = _signingController.checkAnswer(handSign);
+    _lastAnswerCorrect = isCorrect;
+
+    if (isCorrect) {
+      _signingScore++;
+      Vibration.vibrate(duration: 500);
+    } else {
+      Vibration.vibrate(duration: 1000);
+    }
+
     setState(() {
-      final isCorrect = _signingController.checkAnswer(handSign);
-      if (isCorrect) {
-        _signingScore++; // Increment the signing score if the answer is correct
+      showGif = true;
+      _showNextButton = true;
+      _isProcessing = false;
+    });
+  }
+
+  void _handleNext(isDarkMode) {
+    setState(() {
+      _showCapturedImage = false;
+      _capturedImageFile = null;
+
+      if (!_signingController.isQuizFinished) {
+        _signingController.nextQuestion();
+        _showNextButton = false;
+        showGif = false;
+      } else {
+        _showResults();
+        showGif = false;
       }
-
-      String message = isCorrect ? 'Correct!' : 'Incorrect!';
-      showCustomSnackBar(context, isCorrect, message);
-
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() {
-          if (!_signingController.isQuizFinished) {
-            _isProcessing = false;
-            _signingController.nextQuestion();
-          } else {
-            _showResults(isDarkMode);
-          }
-        });
-      });
     });
   }
 
@@ -208,8 +268,7 @@ class _SigningScreenState extends State<SigningScreen>
   }
 
   Future<void> _sendScoreToAPI(int score) async {
-    String apiUrl =
-        'http://${GlobalVariables.server}/api/auth/save_score/'; // Replace with your actual endpoint
+    String apiUrl = 'http://${GlobalVariables.server}/api/auth/save_score/';
     final userData = await AuthService.getUserData();
     final token = await getToken();
     try {
@@ -220,8 +279,7 @@ class _SigningScreenState extends State<SigningScreen>
           'Authorization': 'Token $token',
         },
         body: json.encode({
-          'username': userData?[
-              'username'], // Replace with the actual username or user ID
+          'username': userData?['username'],
           'signing_score': score,
         }),
       );
@@ -236,9 +294,10 @@ class _SigningScreenState extends State<SigningScreen>
     }
   }
 
-  void _showResults(isDarkMode) {
-    // Send the signing score to the backend
+  void _showResults() {
     _sendScoreToAPI(_signingScore);
+
+    final isDarkMode = ThemeManager().isDarkModeNotifier.value;
 
     showDialog(
       context: context,
@@ -274,6 +333,7 @@ class _SigningScreenState extends State<SigningScreen>
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    double teacherSize = MediaQuery.of(context).size.width * 0.7;
     final currentQuestion =
         _signingController.questions[_signingController.currentQuestionIndex];
     return ValueListenableBuilder(
@@ -285,12 +345,14 @@ class _SigningScreenState extends State<SigningScreen>
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               foregroundColor: AppStyles.getTextColor(isDarkMode),
             ),
-            body: _buildBody(screenHeight, currentQuestion, isDarkMode),
+            body: _buildBody(
+                screenHeight, currentQuestion, isDarkMode, teacherSize),
           );
         });
   }
 
-  Widget _buildBody(double screenHeight, final currentQuestion, isDarkMode) {
+  Widget _buildBody(double screenHeight, final currentQuestion, bool isDarkMode,
+      double teacherSize) {
     if (_errorMessage.isNotEmpty) {
       return Center(
         child: Padding(
@@ -330,7 +392,7 @@ class _SigningScreenState extends State<SigningScreen>
             height: screenHeight,
             child: Column(
               children: [
-                SizedBox(height: screenHeight * 0.010),
+                SizedBox(height: screenHeight * 0.030),
                 Column(
                   children: [
                     Text(
@@ -338,39 +400,134 @@ class _SigningScreenState extends State<SigningScreen>
                         style: AppStyles.getHeadLineStyle2(isDarkMode)),
                   ],
                 ),
-                SizedBox(height: screenHeight * 0.010),
-                Center(
-                    child: Text(
-                  currentQuestion.correctNumber.toString(),
-                  style: AppStyles.getHeadLineStyle1(isDarkMode)
-                      .copyWith(fontSize: 80),
-                )),
-                SizedBox(height: screenHeight * 0.010),
-                _buildCameraPreview(),
-                // if (_label.isNotEmpty) _buildPredictionResult(),
+                SizedBox(height: screenHeight * 0.020),
+                QuestionTextWidget(
+                  isDarkMode: isDarkMode,
+                  showNextButton: _showNextButton,
+                  correctNumber: currentQuestion.correctNumber,
+                  prediction:
+                      _prediction,
+                ),
+                SizedBox(height: screenHeight * 0.020),
+                HandSignCameraPreview(
+                  isFrontCamera: _isFrontCamera,
+                  cameraController: _cameraController,
+                  capturedImageFile: _capturedImageFile,
+                  showCapturedImage: _showCapturedImage,
+                ),
               ],
             ),
           ),
-          CameraControls(
-            onCapture: _isProcessing
-                ? () {}
-                : () => _captureAndPredict(isDarkMode),
-            onToggleCamera: _toggleCamera,
-            isProcessing: _isProcessing,
-          ),
+          if (!_showNextButton)
+            CameraControls(
+              onCapture:
+                  _isProcessing ? () {} : () => _captureAndPredict(isDarkMode),
+              onToggleCamera: _toggleCamera,
+              isProcessing: _isProcessing,
+            ),
+          //teacher
+          if (showGif) ...[
+            Positioned(
+                    right: -120,
+                    bottom: 40,
+                    child: SizedBox(
+                      width: teacherSize,
+                      height: teacherSize,
+                      child: !showGif
+                          ? Image.asset(
+                              AppMedia.practiceTeacherRest,
+                              fit: BoxFit.cover,
+                            )
+                          : Gif(
+                              image:
+                                  const AssetImage(AppMedia.practiceTeacherGif),
+                              autostart: Autostart.loop,
+                              controller: _teacherController,
+                              fit: BoxFit.contain),
+                    ))
+                .animate()
+                .slideX(
+                    begin: 0.5,
+                    end: 0,
+                    duration: 500.ms,
+                    curve: Curves.easeInBack)
+                .slideX(
+                    begin: 0,
+                    end: 0.5,
+                    duration: 500.ms,
+                    curve: Curves.easeInBack,
+                    delay: 3200.ms),
+            //dialog box
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 150,
+              child: Opacity(
+                opacity: 0.8,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: teacherSize,
+                    height: teacherSize,
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          _lastAnswerCorrect
+                              ? AppMedia.teacherDialog
+                              : AppMedia.wrongTeacherDialog,
+                          fit: BoxFit.contain,
+                        ),
+                        Align(
+                          alignment: const Alignment(-0.1, -0.7),
+                          child: Text(
+                            _lastAnswerCorrect
+                                ? positivePhrases[
+                                    _signingController.currentQuestionIndex %
+                                        positivePhrases.length]
+                                : negativePhrases[
+                                    _signingController.currentQuestionIndex %
+                                        negativePhrases.length],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+                .animate()
+                .slide(
+                  begin: const Offset(1, 1),
+                  end: const Offset(0, 0),
+                  duration: 500.ms,
+                  curve: Curves.easeInBack,
+                )
+                .slide(
+                  begin: const Offset(0, 0),
+                  end: const Offset(1, 1),
+                  duration: 750.ms,
+                  curve: Curves.easeInBack,
+                  delay: 3200.ms,
+                ),
+          ],
+          if (_showNextButton)
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: NextQuestionButton(
+                    text: "Next Question",
+                    onPressed: () => _handleNext(isDarkMode)),
+              ),
+            ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCameraPreview() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 64.0),
-      child: AspectRatio(
-        aspectRatio: 2 / 3,
-        child: ClipRect(
-          child: CameraPreview(_cameraController!),
-        ),
       ),
     );
   }

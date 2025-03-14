@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:gif/gif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/controllers/lesson_controller.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
@@ -30,6 +31,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
   late final LessonController _controller;
   late final GifController _firstGifController;
   late final GifController _secondGifController;
+  late final GifController _teacherController;
 
   @override
   void initState() {
@@ -53,6 +55,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     _firstGifController.addListener(_handleFirstGifCompletion);
     _secondGifController = GifController(vsync: this);
     _secondGifController.addListener(_handleSecondGifCompletion);
+    _teacherController = GifController(vsync: this);
   }
 
   final List<List<IntroText>> _numberSequences = [
@@ -175,11 +178,11 @@ class _MathLessonScreenState extends State<MathLessonScreen>
           child: ReadingEffect(
             text: _processText(_controller.state.currentTexts[i].text),
             style: isCurrentText
-                  ? AppStyles.getHeadLineStyle2(isDarkMode)
-                  : isDarkMode
-                      ? AppStyles.headLineStyle2.copyWith(color: Colors.white54)
-                      : AppStyles.lightHeadLineStyle2.copyWith(
-                          color: const Color.fromARGB(137, 17, 17, 17)),
+                ? AppStyles.getHeadLineStyle2(isDarkMode)
+                : isDarkMode
+                    ? AppStyles.headLineStyle2.copyWith(color: Colors.white54)
+                    : AppStyles.lightHeadLineStyle2
+                        .copyWith(color: const Color.fromARGB(137, 17, 17, 17)),
             speed: 30,
             animate: isCurrentText,
             onAnimationComplete: isCurrentText
@@ -193,31 +196,79 @@ class _MathLessonScreenState extends State<MathLessonScreen>
 
   @override
   Widget build(BuildContext context) {
+    double teacherSize = MediaQuery.of(context).size.width * 1;
     return ValueListenableBuilder(
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {
           return Scaffold(
               appBar: AppBar(
                 backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
-                iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black87),
+                iconTheme: IconThemeData(
+                    color: isDarkMode ? Colors.white : Colors.black87),
               ),
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               body: GestureDetector(
                 onTap: _controller.handleTap,
                 behavior: HitTestBehavior.opaque,
-                child: SafeArea(
-                    child: ListView(
-                  padding: const EdgeInsets.all(16.0),
-                  children: [
-                    _buildTextSequence(isDarkMode),
-                    const SizedBox(height: 35),
-                    if (_controller.state.showGif)
-                      SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: Center(child: _buildGifDisplayForAddition(isDarkMode))),
-                    if (_controller.state.showContinue) const PulsingEffect(),
-                  ],
-                )),
+                child: Stack(children: [
+                  SafeArea(
+                      child: ListView(
+                    padding: const EdgeInsets.all(16.0),
+                    children: [
+                      _buildTextSequence(isDarkMode),
+                      const SizedBox(height: 35),
+                      if (_controller.state.showGif)
+                        SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Center(
+                                child:
+                                    _buildGifDisplayForAddition(isDarkMode))),
+                      if (_controller.state.showContinue) const PulsingEffect(),
+                    ],
+                  )),
+                  Positioned(
+                    right: -140,
+                    bottom: -40,
+                    child: SizedBox(
+                      width: teacherSize,
+                      height: teacherSize,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(200),
+                        child: !_controller.state.showGif
+                            ? (!_controller.state.showContinue
+                                ? Gif(
+                                    image:
+                                        const AssetImage(AppMedia.teacherGif),
+                                    autostart: Autostart.loop,
+                                    controller: _teacherController,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.asset(
+                                    AppMedia.teacherRest,
+                                    fit: BoxFit.cover,
+                                  ))
+                            : Image.asset(
+                                AppMedia.teacherRest,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                  ).animate(
+                    target: _controller.state.showGif ? 1 : 0,
+                    effects: [
+                      const ScaleEffect(
+                        begin: Offset(1, 1),
+                        end: Offset(0.6, 0.6),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                      const MoveEffect(
+                        begin: Offset(0, -50),
+                        end: Offset(0, 100),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                    ],
+                  )
+                ]),
               ));
         });
   }
@@ -229,6 +280,8 @@ class _MathLessonScreenState extends State<MathLessonScreen>
 
     _firstGifController.dispose();
     _secondGifController.dispose();
+
+    _teacherController.dispose();
 
     super.dispose();
   }

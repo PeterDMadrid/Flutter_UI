@@ -35,7 +35,7 @@ class AnswerDisplay extends StatelessWidget {
 
     return Text(
       displayText,
-      style: style ?? AppStyles.headLineStyle2.copyWith(fontSize: 38),
+      style: style ?? AppStyles.headLineStyle2.copyWith(fontSize: 42),
     );
   }
 }
