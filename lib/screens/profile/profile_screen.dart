@@ -380,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 final levelScore = getChallengeScore(levelNumber);
 
                 return buildProgressBar(
-                    "Addition: $levelNumber Score", levelScore, 10, isDarkMode);
+                    "Addition level $levelNumber Score", levelScore, 10, isDarkMode);
               },
             ),
           ),
@@ -408,7 +408,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 final levelNumber = index + 7;
                 final levelScore = getChallengeScore(levelNumber);
 
-                return buildProgressBar("Subtraction: $levelNumber Score",
+                return buildProgressBar("Subtraction level $levelNumber Score",
                     levelScore, 10, isDarkMode);
               },
             ),
@@ -430,7 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Total Challenge",
+                "Total Challenge Score",
                 style: (isDarkMode
                         ? AppStyles.headLineStyle2
                         : AppStyles.lightHeadLineStyle2)
