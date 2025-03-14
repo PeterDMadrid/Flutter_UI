@@ -34,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   Map<String, dynamic>? _scores;
   bool _isLoading = true;
   String? _error;
+  late List<int> challengeScores;
 
   @override
   void initState() {
@@ -118,6 +119,15 @@ class _ProfileScreenState extends State<ProfileScreen>
     } catch (e) {
       print('Error during logout: $e');
     }
+  }
+
+  int getChallengeScore(int level) {
+    final challengeScores =
+        (_scores?['challenge_scores'] as List<dynamic>?)?.cast<int>() ?? [];
+    if (level < challengeScores.length) {
+      return challengeScores[level];
+    }
+    return 0; // Default score if level doesn't exist
   }
 
   Widget buildProfileImage() {
@@ -215,6 +225,8 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     final recognition = _scores?['recognition'] ?? 0;
     final signing = _scores?['signing'] ?? 0;
+    final challengeScores =
+        (_scores?['challenge_scores'] as List<dynamic>?)?.cast<int>() ?? [];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -261,7 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Total Practice",
+                "Total Practice Score",
                 style: (isDarkMode
                         ? AppStyles.headLineStyle2
                         : AppStyles.lightHeadLineStyle2)
@@ -302,11 +314,18 @@ class _ProfileScreenState extends State<ProfileScreen>
   PageController subtractionPageController = PageController();
   int currentAdditionPage = 0;
   int currentSubtractionPage = 0;
-
   Widget buildChallengeCard(bool isDarkMode) {
     if (_scores == null) return const SizedBox.shrink();
 
-    const int totalLevels = 6; 
+    const int totalLevels = 6;
+
+    // Calculate total challenge score
+    final challengeScores =
+        (_scores?['challenge_scores'] as List<dynamic>?)?.cast<int>() ?? [];
+    final totalChallengeScore =
+        challengeScores.fold(0, (sum, score) => sum + score);
+    // Assuming maximum score is 10 points per level and you have 12 levels total
+    const maxChallengeScore = 120; // 12 levels × 10 points
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -358,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               },
               itemBuilder: (context, index) {
                 final levelNumber = index + 1;
-                final levelScore = _scores?['addition$levelNumber'] ?? 0;
+                final levelScore = getChallengeScore(levelNumber);
 
                 return buildProgressBar(
                     "Addition: $levelNumber Score", levelScore, 10, isDarkMode);
@@ -386,8 +405,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                 });
               },
               itemBuilder: (context, index) {
-                final levelNumber = index + 1;
-                final levelScore = _scores?['subtraction$levelNumber'] ?? 0;
+                final levelNumber = index + 7;
+                final levelScore = getChallengeScore(levelNumber);
 
                 return buildProgressBar("Subtraction: $levelNumber Score",
                     levelScore, 10, isDarkMode);
@@ -400,6 +419,48 @@ class _ProfileScreenState extends State<ProfileScreen>
           IndicatorDots(
               currentAdditionPage: currentSubtractionPage,
               totalLevels: totalLevels),
+
+          // Add divider and total section
+          const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 12),
+
+          // Total Challenge Score section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Total Challenge",
+                style: (isDarkMode
+                        ? AppStyles.headLineStyle2
+                        : AppStyles.lightHeadLineStyle2)
+                    .copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Text("$totalChallengeScore / $maxChallengeScore",
+                  style: AppStyles.paragraph2),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: totalChallengeScore / maxChallengeScore,
+              minHeight: 12,
+              backgroundColor:
+                  isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                AppStyles.khaki,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "${(totalChallengeScore / maxChallengeScore * 100).toStringAsFixed(1)}%",
+            style: AppStyles.paragraph2.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
         ],
       ),
     );
@@ -481,11 +542,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const HeadingProfile(headingText: "Scores"),
+                    HeadingProfile(
+                        headingText: "Scores", isDarkMode: isDarkMode),
                     buildPracticeCard(isDarkMode),
                     buildChallengeCard(isDarkMode),
                     const SizedBox(height: 16),
-                    const HeadingProfile(headingText: "Overall"),
+                    HeadingProfile(
+                        headingText: "Overall", isDarkMode: isDarkMode),
                     buildOverallProgressCard(isDarkMode),
                   ],
                 ),
@@ -501,9 +564,11 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     final recognition = _scores?['recognition'] ?? 0;
     final signing = _scores?['signing'] ?? 0;
-    final challenge = _scores?['challenge'] ?? 0;
+    final challengeScores =
+        (_scores?['challenge_scores'] as List<dynamic>?)?.cast<int>() ?? [];
+    final challenge = challengeScores.fold(0, (sum, score) => sum + score);
     final total = recognition + signing + challenge;
-    const maxTotal = 30;
+    const maxTotal = 140;
     final progress = total / maxTotal;
 
     return Center(
