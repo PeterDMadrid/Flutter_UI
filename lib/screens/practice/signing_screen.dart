@@ -22,7 +22,7 @@ import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/base/widgets/handsigns_camera_preview.dart';
 import 'package:flutter_hands/screens/practice/widgets/question_text_widget.dart';
-
+import 'package:audioplayers/audioplayers.dart';
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -229,15 +229,19 @@ class _SigningScreenState extends State<SigningScreen>
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _handleAnswer(int handSign, bool isDarkMode) {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  Future<void> _handleAnswer(int handSign, bool isDarkMode) async {
     final isCorrect = _signingController.checkAnswer(handSign);
     _lastAnswerCorrect = isCorrect;
 
     if (isCorrect) {
       _signingScore++;
       Vibration.vibrate(duration: 500);
+      await _audioPlayer.play(AssetSource('correct.mp3'));
     } else {
       Vibration.vibrate(duration: 1000);
+      await _audioPlayer.play(AssetSource('wrong.mp3'));
     }
 
     setState(() {

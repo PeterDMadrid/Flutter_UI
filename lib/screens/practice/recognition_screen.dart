@@ -12,6 +12,7 @@ import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -64,18 +65,26 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     Overlay.of(context).insert(_overlayEntry!);
   }
 
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  
   void _handleAnswer(int selectedChoice) {
-    if (_isAnswerLocked) return;
-    setState(() {
-      final isCorrect = _controller.checkAnswer(selectedChoice);
-      String message = isCorrect ? 'Correct!' : 'Incorrect!';
-      showCustomSnackBar(context, isCorrect, message);
-      _isAnswerLocked = true;
-      _selectedChoice = selectedChoice;
-      _showResult = true;
-      _showNextButton = true;
-    });
+  if (_isAnswerLocked) return;
+  final isCorrect = _controller.checkAnswer(selectedChoice);
+  String message = isCorrect ? 'Correct!' : 'Incorrect!';
+  if (isCorrect) {
+    _audioPlayer.play(AssetSource('correct.mp3'));
+  } else {
+    _audioPlayer.play(AssetSource('wrong.mp3'));
   }
+  setState(() {
+    showCustomSnackBar(context, isCorrect, message);
+    _isAnswerLocked = true;
+    _selectedChoice = selectedChoice;
+    _showResult = true;
+    _showNextButton = true;
+  });
+}
+
 
   void _handleNext(isDarkMode) {
     setState(() {
