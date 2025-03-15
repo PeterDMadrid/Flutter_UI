@@ -45,6 +45,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_animate: ^4.5.2
   google_mlkit_pose_detection: ^0.13.0
+  audioplayers: ^6.4.0
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,8 @@ flutter:
     - assets/frame_display/
     - assets/two_digits/
     - assets/instructions/
+    - assets/sounds/correct.mp3
+    - assets/sounds/incorrect.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
