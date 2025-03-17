@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hands/main.dart';
 import 'package:vibration/vibration.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
@@ -51,10 +52,13 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
   final String bottomInstructions =
       "Solve the equation and sign your answer. Capture once you're ready!";
 
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  
   @override
   void initState() {
     super.initState();
     _initializeCamera();
+    _initializeAudioPlayer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
@@ -76,10 +80,10 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       setState(() {});
     });
   }
-
+  
   File? _capturedImageFile;
   bool _showCapturedImage = false;
-
+  
   Future<void> _captureAndPredict(isDarkMode) async {
     if (_isProcessing ||
         _cameraController == null ||
@@ -162,7 +166,15 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     }
   }
 
-  void _handleAnswer(List handSign, isDarkMode) {
+   Future<void> _initializeAudioPlayer() async {
+    try {
+      await _audioPlayer.setReleaseMode(ReleaseMode.release);
+    } catch (e) {
+      debugPrint("AudioPlayer initialization error: $e");
+    }
+  }
+  
+  Future<void> _handleAnswer(List handSign, isDarkMode) async {
     final isCorrect = _quizController.checkAnswer(handSign);
     final currentQuestion =
         _quizController.questions[_quizController.currentQuestionIndex];
@@ -172,8 +184,10 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     if (isCorrect) {
       _score++;
       Vibration.vibrate(duration: 500);
+      await _audioPlayer.play(AssetSource(AppMedia.correctSound));
     } else {
       Vibration.vibrate(duration: 1000);
+       await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
     }
 
     setState(() {
@@ -319,6 +333,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
   void dispose() {
     _overlayEntry?.remove();
     _cameraController?.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
