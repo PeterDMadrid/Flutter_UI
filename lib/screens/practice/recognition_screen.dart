@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
@@ -12,7 +13,6 @@ import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
-import 'package:audioplayers/audioplayers.dart';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -31,6 +31,9 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   static const _storage = FlutterSecureStorage();
 
+  //Audio
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   final String instructions =
       "Get ready to familiarize yourself with sign language!";
 
@@ -44,6 +47,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
+    _initializeAudioPlayer();
   }
 
   void _showInstructions() {
@@ -64,26 +68,32 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
   }
-  
-  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  Future<void> _initializeAudioPlayer() async {
+    try {
+      await _audioPlayer.setReleaseMode(ReleaseMode.release);
+    } catch (e) {
+      debugPrint("AudioPlayer initialization error: $e");
+    }
+  }
 
   void _handleAnswer(int selectedChoice) async {
-  if (_isAnswerLocked) return;
-  final isCorrect = _controller.checkAnswer(selectedChoice);
-  String message = isCorrect ? 'Correct!' : 'Incorrect!';
-  if (isCorrect) {
-    await _audioPlayer.play(AssetSource('correct.mp3'));
-  } else {
-    await _audioPlayer.play(AssetSource('incorrect.mp3'));
+    if (_isAnswerLocked) return;
+    final isCorrect = _controller.checkAnswer(selectedChoice);
+    String message = isCorrect ? 'Correct!' : 'Incorrect!';
+    if (isCorrect) {
+      await _audioPlayer.play(AssetSource(AppMedia.correctSound));
+    } else {
+      await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
+    }
+    setState(() {
+      showCustomSnackBar(context, isCorrect, message);
+      _isAnswerLocked = true;
+      _selectedChoice = selectedChoice;
+      _showResult = true;
+      _showNextButton = true;
+    });
   }
-  setState(() {
-    showCustomSnackBar(context, isCorrect, message);
-    _isAnswerLocked = true;
-    _selectedChoice = selectedChoice;
-    _showResult = true;
-    _showNextButton = true;
-  });
-}
 
   void _handleNext(isDarkMode) {
     setState(() {
