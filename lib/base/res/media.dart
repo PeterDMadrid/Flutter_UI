@@ -6,7 +6,7 @@ class AppMedia {
   static const defaultProfilePhoto = '$_baseMedia/default_profile_photo.jpg';
   static const challengePoster = '$_baseMedia/challenge_poster.png';
   static const introductionPoster = '$_baseMedia/introduction_poster.png';
-  static const twoDigitsPoster = '$_baseMedia/two_digits_poster.png';
+  static const twoDigitsPoster = '$_baseMedia/two_digits.png';
   static const mathLessonPoster = '$_baseMedia/math_lesson_poster.png';
 
   //idle character
