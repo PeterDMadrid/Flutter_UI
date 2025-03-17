@@ -1,14 +1,19 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_hands/main.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_hands/base/res/media.dart';
+import 'package:flutter_hands/services/auth_service.dart';
 import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/base/widgets/instructions.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/widgets/camera_controls.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/screens/practice/widgets/sign_card.dart';
@@ -72,7 +77,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
         difficulty: difficulty,
         mode: mode,
       );
-
+      _initializeLevel();
       setState(() {});
     });
   }
@@ -257,6 +262,8 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
   }
 
   void _showResults(isDarkMode) {
+    _sendChallengeScoreToAPI(_score);
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -288,6 +295,42 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     );
   }
 
+  static const _storage = FlutterSecureStorage();
+  static Future<String?> getToken() async {
+    return await _storage.read(key: 'token');
+  }
+
+  Future<void> _sendChallengeScoreToAPI(int score) async {
+    String apiUrl =
+        'http://${GlobalVariables.server}/api/auth/save_challenge_score/';
+    final token = await getToken();
+    final userData = await AuthService.getUserData();
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $token',
+        },
+        body: json.encode({
+          'username': userData?['username'],
+          'score': score,
+          'level': level, // This is already defined in your class
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Challenge score saved successfully: ${response.body}');
+      } else {
+        throw Exception(
+            'Failed to save challenge score: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error saving challenge score: $e');
+    }
+  }
+
   void _showInstructions() {
     _overlayEntry = OverlayEntry(
       builder: (context) => Instructions(
@@ -313,6 +356,27 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     );
 
     Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  late int level;
+  void _initializeLevel() {
+    final levelMap = {
+      AdditionDifficulty.additionLevel1: 1,
+      AdditionDifficulty.additionLevel2: 2,
+      AdditionDifficulty.additionLevel3: 3,
+      AdditionDifficulty.additionLevel4: 4,
+      AdditionDifficulty.additionLevel5: 5,
+      AdditionDifficulty.additionLevel6: 6,
+      SubtractionDifficulty.subtractionLevel1: 7,
+      SubtractionDifficulty.subtractionLevel2: 8,
+      SubtractionDifficulty.subtractionLevel3: 9,
+      SubtractionDifficulty.subtractionLevel4: 10,
+      SubtractionDifficulty.subtractionLevel5: 11,
+      SubtractionDifficulty.subtractionLevel6: 12,
+    };
+    level = mode == MathMode.addition
+        ? levelMap[difficulty as AdditionDifficulty] ?? 1
+        : levelMap[difficulty as SubtractionDifficulty] ?? 7;
   }
 
   @override

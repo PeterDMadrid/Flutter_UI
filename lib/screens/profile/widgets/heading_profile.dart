@@ -4,19 +4,20 @@ import 'package:flutter_hands/base/res/styles/app_styles.dart';
 class HeadingProfile extends StatelessWidget {
   final String headingText;
   final Color? customColor;
+  final bool isDarkMode;
 
   const HeadingProfile({
     super.key,
     required this.headingText,
     this.customColor,
+    required this.isDarkMode,
   });
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final headingColor = customColor ?? 
+    final headingColor = customColor ??
         (isDarkMode ? AppStyles.headlineColor : AppStyles.lightHeadlineColor);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
