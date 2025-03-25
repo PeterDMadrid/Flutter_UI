@@ -7,6 +7,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:vibration/vibration.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_hands/base/widgets/phrases.dart';
@@ -22,7 +23,6 @@ import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/services/image_prediction_service.dart';
 import 'package:flutter_hands/base/widgets/handsigns_camera_preview.dart';
 import 'package:flutter_hands/screens/practice/widgets/question_text_widget.dart';
-
 
 class SigningScreen extends StatefulWidget {
   const SigningScreen({super.key});
@@ -55,6 +55,9 @@ class _SigningScreenState extends State<SigningScreen>
   late final GifController _teacherController;
   bool _lastAnswerCorrect = false;
 
+//Audio
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   final String instructions =
       "Show your signing skills! Read the number and sign it correctly";
 
@@ -66,6 +69,7 @@ class _SigningScreenState extends State<SigningScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
+    _initializeAudioPlayer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
@@ -184,6 +188,7 @@ class _SigningScreenState extends State<SigningScreen>
     WidgetsBinding.instance.removeObserver(this);
     _overlayEntry?.remove();
     _cameraController?.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -229,15 +234,25 @@ class _SigningScreenState extends State<SigningScreen>
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _handleAnswer(int handSign, bool isDarkMode) {
+  Future<void> _initializeAudioPlayer() async {
+    try {
+      await _audioPlayer.setReleaseMode(ReleaseMode.release);
+    } catch (e) {
+      debugPrint("AudioPlayer initialization error: $e");
+    }
+  }
+
+  Future<void> _handleAnswer(int handSign, bool isDarkMode) async {
     final isCorrect = _signingController.checkAnswer(handSign);
     _lastAnswerCorrect = isCorrect;
 
     if (isCorrect) {
       _signingScore++;
       Vibration.vibrate(duration: 500);
+      await _audioPlayer.play(AssetSource(AppMedia.correctSound));
     } else {
       Vibration.vibrate(duration: 1000);
+      await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
     }
 
     setState(() {
@@ -405,8 +420,7 @@ class _SigningScreenState extends State<SigningScreen>
                   isDarkMode: isDarkMode,
                   showNextButton: _showNextButton,
                   correctNumber: currentQuestion.correctNumber,
-                  prediction:
-                      _prediction,
+                  prediction: _prediction,
                 ),
                 SizedBox(height: screenHeight * 0.020),
                 HandSignCameraPreview(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/widgets/snackbar.dart';
 import 'package:flutter_hands/services/auth_service.dart';
@@ -30,6 +31,9 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   static const _storage = FlutterSecureStorage();
 
+  //Audio
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   final String instructions =
       "Get ready to familiarize yourself with sign language!";
 
@@ -43,6 +47,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInstructions();
     });
+    _initializeAudioPlayer();
   }
 
   void _showInstructions() {
@@ -64,11 +69,24 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _handleAnswer(int selectedChoice) {
+  Future<void> _initializeAudioPlayer() async {
+    try {
+      await _audioPlayer.setReleaseMode(ReleaseMode.release);
+    } catch (e) {
+      debugPrint("AudioPlayer initialization error: $e");
+    }
+  }
+
+  void _handleAnswer(int selectedChoice) async {
     if (_isAnswerLocked) return;
+    final isCorrect = _controller.checkAnswer(selectedChoice);
+    String message = isCorrect ? 'Correct!' : 'Incorrect!';
+    if (isCorrect) {
+      await _audioPlayer.play(AssetSource(AppMedia.correctSound));
+    } else {
+      await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
+    }
     setState(() {
-      final isCorrect = _controller.checkAnswer(selectedChoice);
-      String message = isCorrect ? 'Correct!' : 'Incorrect!';
       showCustomSnackBar(context, isCorrect, message);
       _isAnswerLocked = true;
       _selectedChoice = selectedChoice;

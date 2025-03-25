@@ -75,4 +75,7 @@ class AppMedia {
     '$_baseMediaForTwoDigits/eight.gif',
     '$_baseMediaForTwoDigits/nine.gif',
   ];
+
+  static const correctSound = "sounds/correct.mp3";
+  static const incorrectSound = "sounds/incorrect.mp3";
 }
