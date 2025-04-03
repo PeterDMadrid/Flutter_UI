@@ -2,6 +2,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_hands/base/widgets/phrases.dart';
+import 'package:gif/gif.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_hands/main.dart';
 import 'package:vibration/vibration.dart';
@@ -30,7 +33,8 @@ class ChallengeQuiz extends StatefulWidget {
   State<ChallengeQuiz> createState() => _ChallengeQuizState();
 }
 
-class _ChallengeQuizState extends State<ChallengeQuiz> {
+class _ChallengeQuizState extends State<ChallengeQuiz>
+    with TickerProviderStateMixin {
   late ChallengeQuizController _quizController;
   late dynamic difficulty;
   late MathMode mode;
@@ -51,6 +55,10 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
 
   int _score = 0;
 
+  bool showGif = false;
+  late final GifController _teacherController;
+  bool _lastAnswerCorrect = false;
+
   String get instructions =>
       "Time to practice ${mode == MathMode.addition ? 'addition' : 'subtraction'} with sign language!";
 
@@ -58,7 +66,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       "Solve the equation and sign your answer. Capture once you're ready!";
 
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   @override
   void initState() {
     super.initState();
@@ -84,11 +92,12 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       _initializeLevel();
       setState(() {});
     });
+    _teacherController = GifController(vsync: this);
   }
-  
+
   File? _capturedImageFile;
   bool _showCapturedImage = false;
-  
+
   Future<void> _captureAndPredict(isDarkMode) async {
     if (_isProcessing ||
         _cameraController == null ||
@@ -171,16 +180,17 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     }
   }
 
-   Future<void> _initializeAudioPlayer() async {
+  Future<void> _initializeAudioPlayer() async {
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.release);
     } catch (e) {
       debugPrint("AudioPlayer initialization error: $e");
     }
   }
-  
+
   Future<void> _handleAnswer(List handSign, isDarkMode) async {
     final isCorrect = _quizController.checkAnswer(handSign);
+    _lastAnswerCorrect = isCorrect;
     final currentQuestion =
         _quizController.questions[_quizController.currentQuestionIndex];
     final correctAnswer =
@@ -192,10 +202,11 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
       await _audioPlayer.play(AssetSource(AppMedia.correctSound));
     } else {
       Vibration.vibrate(duration: 1000);
-       await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
+      await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
     }
 
     setState(() {
+      showGif = true;
       _showNextButton = true;
       _isProcessing = false;
     });
@@ -217,8 +228,10 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
         _isProcessing = false;
         currentAnswer.clear();
         _showNextButton = false;
+        showGif = false;
       } else {
         _showResults(isDarkMode);
+        showGif = false;
       }
     });
   }
@@ -398,12 +411,14 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
     _overlayEntry?.remove();
     _cameraController?.dispose();
     _audioPlayer.dispose();
+    _teacherController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    double teacherSize = MediaQuery.of(context).size.width * 0.7;
     final currentQuestion =
         _quizController.questions[_quizController.currentQuestionIndex];
     final expectedLength = currentQuestion.correctAnswer.toString().length;
@@ -418,14 +433,14 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               foregroundColor: AppStyles.getTextColor(isDarkMode),
             ),
-            body: _buildBody(
-                screenHeight, currentQuestion, expectedLength, isDarkMode),
+            body: _buildBody(screenHeight, currentQuestion, expectedLength,
+                isDarkMode, teacherSize),
           );
         });
   }
 
   Widget _buildBody(double screenHeight, final currentQuestion,
-      int expectedLength, isDarkMode) {
+      int expectedLength, isDarkMode, teacherSize) {
     if (_errorMessage.isNotEmpty) {
       return Center(
         child: Padding(
@@ -509,6 +524,97 @@ class _ChallengeQuizState extends State<ChallengeQuiz> {
               onToggleCamera: _toggleCamera,
               isProcessing: _isProcessing,
             ),
+          //teacher
+          if (showGif) ...[
+            Positioned(
+                    right: -120,
+                    bottom: 40,
+                    child: SizedBox(
+                      width: teacherSize,
+                      height: teacherSize,
+                      child: !showGif
+                          ? Image.asset(
+                              AppMedia.practiceTeacherRest,
+                              fit: BoxFit.cover,
+                            )
+                          : Gif(
+                              image:
+                                  const AssetImage(AppMedia.practiceTeacherGif),
+                              autostart: Autostart.loop,
+                              controller: _teacherController,
+                              fit: BoxFit.contain),
+                    ))
+                .animate()
+                .slideX(
+                    begin: 0.5,
+                    end: 0,
+                    duration: 500.ms,
+                    curve: Curves.easeInBack)
+                .slideX(
+                    begin: 0,
+                    end: 0.5,
+                    duration: 500.ms,
+                    curve: Curves.easeInBack,
+                    delay: 3200.ms),
+            //dialog box
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 150,
+              child: Opacity(
+                opacity: 0.8,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: teacherSize,
+                    height: teacherSize,
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          _lastAnswerCorrect
+                              ? AppMedia.teacherDialog
+                              : AppMedia.wrongTeacherDialog,
+                          fit: BoxFit.contain,
+                        ),
+                        Align(
+                          alignment: const Alignment(-0.1, -0.7),
+                          child: Text(
+                            _lastAnswerCorrect
+                                ? positivePhrases[
+                                    _quizController.currentQuestionIndex %
+                                        positivePhrases.length]
+                                : negativePhrases[
+                                    _quizController.currentQuestionIndex %
+                                        negativePhrases.length],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+                .animate()
+                .slide(
+                  begin: const Offset(1, 1),
+                  end: const Offset(0, 0),
+                  duration: 500.ms,
+                  curve: Curves.easeInBack,
+                )
+                .slide(
+                  begin: const Offset(0, 0),
+                  end: const Offset(1, 1),
+                  duration: 750.ms,
+                  curve: Curves.easeInBack,
+                  delay: 3200.ms,
+                ),
+          ],
           if (currentAnswer.isNotEmpty && !_showNextButton)
             Positioned(
                 bottom: 60,

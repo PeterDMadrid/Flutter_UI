@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hands/base/res/global/user_session.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/screens/lesson/lesson_screen.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
@@ -32,6 +33,27 @@ class _BottomNavBarState extends State<BottomNavBar> {
     super.initState();
     if (widget.initialUserData != null) {
       _initializeUserData(widget.initialUserData!);
+
+      UserSession().setUserData(widget.initialUserData!);
+    } else {
+
+      _loadUserDataFromSession();
+    }
+  }
+
+  void _loadUserDataFromSession() {
+
+    final session = UserSession();
+    if (!session.isLoading && session.isInitialized) {
+      setState(() {
+        username = session.username;
+        profilePicture = session.profilePicture;
+        scoreRecognition = session.scoreRecognition;
+        currentLevel = session.currentLevel;
+      });
+    } else {
+      // Redirect to login or show error if needed
+      print('No user data available');
     }
   }
 
@@ -90,7 +112,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: AppStyles.getHeadLineColor(isDarkMode).withOpacity(0.1),
+                    color:
+                        AppStyles.getHeadLineColor(isDarkMode).withOpacity(0.1),
                     blurRadius: 5,
                     offset: const Offset(0, -1),
                   ),
@@ -101,8 +124,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 type: BottomNavigationBarType.fixed,
                 currentIndex: _selectedIndex,
                 onTap: _onItemTapped,
-                selectedItemColor: isDarkMode ? const Color.fromARGB(255, 189, 215, 230) : const Color.fromARGB(255, 9, 51, 75),
-                unselectedItemColor: isDarkMode ? const Color.fromARGB(255, 74, 102, 116) : const Color.fromARGB(255, 92, 142, 167),
+                selectedItemColor: isDarkMode
+                    ? const Color.fromARGB(255, 189, 215, 230)
+                    : const Color.fromARGB(255, 9, 51, 75),
+                unselectedItemColor: isDarkMode
+                    ? const Color.fromARGB(255, 74, 102, 116)
+                    : const Color.fromARGB(255, 92, 142, 167),
                 showSelectedLabels: true,
                 showUnselectedLabels: true,
                 items: const [
