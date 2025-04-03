@@ -189,6 +189,7 @@ class _SigningScreenState extends State<SigningScreen>
     _overlayEntry?.remove();
     _cameraController?.dispose();
     _audioPlayer.dispose();
+    _teacherController.dispose();
     super.dispose();
   }
 

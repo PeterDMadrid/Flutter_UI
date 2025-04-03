@@ -13,6 +13,7 @@ import 'package:flutter_hands/base/res/global/global_variables.dart';
 import 'package:flutter_hands/base/widgets/next_question_button.dart';
 import 'package:flutter_hands/controllers/recognition_controller.dart';
 import 'package:flutter_hands/screens/practice/widgets/choice_card.dart';
+import 'package:vibration/vibration.dart';
 
 class RecognitionScreen extends StatefulWidget {
   const RecognitionScreen({super.key});
@@ -82,8 +83,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     final isCorrect = _controller.checkAnswer(selectedChoice);
     String message = isCorrect ? 'Correct!' : 'Incorrect!';
     if (isCorrect) {
+      Vibration.vibrate(duration: 500);
       await _audioPlayer.play(AssetSource(AppMedia.correctSound));
     } else {
+      Vibration.vibrate(duration: 1000);
       await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
     }
     setState(() {
