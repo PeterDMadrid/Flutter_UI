@@ -11,7 +11,7 @@ class AppStyles {
   static TextStyle headLineStyle1 = TextStyle(
       fontSize: 26, fontWeight: FontWeight.bold, color: headlineColor);
   static TextStyle headLineStyle2 = const TextStyle(
-      fontSize: 24, fontWeight: FontWeight.bold, color: Colors.amber);
+      fontSize: 26, fontWeight: FontWeight.bold, color: Colors.amber);
   static TextStyle paragraph1 =
       const TextStyle(fontSize: 21, color: Colors.white);
   static TextStyle paragraph2 =
@@ -27,7 +27,7 @@ class AppStyles {
   static TextStyle lightHeadLineStyle1 = TextStyle(
       fontSize: 26, fontWeight: FontWeight.bold, color: lightHeadlineColor);
   static TextStyle lightHeadLineStyle2 = TextStyle(
-      fontSize: 24, fontWeight: FontWeight.bold, color: Colors.amber[800]);
+      fontSize: 26, fontWeight: FontWeight.bold, color: Colors.amber[800]);
   static TextStyle lightParagraph1 =
       const TextStyle(fontSize: 21, color: Colors.black);
   static TextStyle lightParagraph2 =

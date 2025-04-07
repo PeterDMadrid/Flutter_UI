@@ -603,7 +603,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         child: Column(
           children: [
             Text(
-              "Total Scores",
+              "Average Score",
               style: isDarkMode
                   ? AppStyles.headLineStyle2
                   : AppStyles.lightHeadLineStyle2,
