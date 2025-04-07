@@ -10,6 +10,7 @@ import 'package:flutter_hands/screens/lesson/widgets/intro_text.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
 import 'package:flutter_hands/screens/lesson/widgets/gif_display.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class Introduction extends StatefulWidget {
   const Introduction({super.key, required this.name});
@@ -24,7 +25,8 @@ class _IntroductionState extends State<Introduction>
     with TickerProviderStateMixin {
   late final LessonController _controller;
   late final GifController _teacherController;
-
+  final FlutterTts _flutterTts = FlutterTts();
+  bool _isTtsEnabled = false;
   final List<List<IntroText>> _numberSequences = [
     [
       const IntroText(text: "Hi, %name%! Are you ready to learn some signs?"),
@@ -105,6 +107,18 @@ class _IntroductionState extends State<Introduction>
   @override
   void initState() {
     super.initState();
+    _flutterTts.setLanguage("en-US");
+    _flutterTts.setSpeechRate(1);
+    _flutterTts.setPitch(2.0);      
+
+     _flutterTts.getVoices.then((voices) {
+    for (var voice in voices) {
+      if (voice.contains('female')) { 
+        _flutterTts.setVoice(voice);
+        break;
+      }
+    }
+  });
     _controller = LessonController(
       setState: setState,
       numberSequences: _numberSequences,
@@ -118,10 +132,18 @@ class _IntroductionState extends State<Introduction>
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _teacherController.dispose();
     super.dispose();
   }
-
+  void _toggleTts() {
+  setState(() {
+    _isTtsEnabled = !_isTtsEnabled;
+  }); 
+  if (!_isTtsEnabled) {
+    _flutterTts.stop();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     double teacherSize = MediaQuery.of(context).size.width * 1;
@@ -133,6 +155,16 @@ class _IntroductionState extends State<Introduction>
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               iconTheme: IconThemeData(
                   color: isDarkMode ? Colors.white : Colors.black87),
+                  actions: [
+            IconButton(
+              icon: Icon(
+                _isTtsEnabled ? Icons.volume_up : Icons.volume_off,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: _toggleTts,
+            ),
+          ],
+
             ),
             backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
             body: GestureDetector(
@@ -149,6 +181,10 @@ class _IntroductionState extends State<Introduction>
                             (i) {
                           final isCurrentText =
                               i == _controller.state.currentTextIndex;
+                              if (_isTtsEnabled && isCurrentText) {
+                        _flutterTts.speak(_processText(
+                            _controller.state.currentTexts[i].text));
+                          }
                           return Padding(
                             padding:
                                 EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
