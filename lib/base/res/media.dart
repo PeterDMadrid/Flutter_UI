@@ -9,6 +9,9 @@ class AppMedia {
   static const twoDigitsPoster = '$_baseMedia/two_digits_poster.png';
   static const mathLessonPoster = '$_baseMedia/math_lesson_poster.png';
 
+  //logo
+  static const mathandsLogo = '$_baseMedia/logo.png';
+
   //idle character
   static const teacherGif = '$_baseMediaForGif/teacher_talk.gif';
   static const teacherRest = '$_baseMediaForFrames/teacher_rest.png';

@@ -198,6 +198,7 @@ class _IntroductionState extends State<Introduction>
                     left: 16,
                     bottom: 16,
                     child: NumberSelection(
+                      isTwoDigit: false,
                       onNumberSelected: _controller.handleNumberSelection,
                     ),
                   ),

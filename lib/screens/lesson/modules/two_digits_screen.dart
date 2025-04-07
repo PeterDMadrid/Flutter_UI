@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:async';
+import 'package:flutter_hands/base/widgets/number_selection.dart';
 import 'package:gif/gif.dart';
 import '../widgets/intro_text.dart';
 import 'package:flutter/material.dart';
@@ -194,86 +195,132 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {
           return Scaffold(
-            appBar: AppBar(
+              appBar: AppBar(
+                backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+                iconTheme: IconThemeData(
+                    color: isDarkMode ? Colors.white : Colors.black87),
+              ),
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
-              iconTheme: IconThemeData(
-                  color: isDarkMode ? Colors.white : Colors.black87),
-            ),
-            backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
-            body: GestureDetector(
-              onTap: _controller.handleTap,
-              behavior: HitTestBehavior.translucent,
-              child: Stack(
-                fit: StackFit.expand,
+              body: Stack(
                 children: [
-                  SafeArea(
-                    child: ListView(
-                      padding: const EdgeInsets.all(_defaultPadding),
+                  GestureDetector(
+                    onTap: _controller.handleTap,
+                    behavior: HitTestBehavior.translucent,
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        _buildTextSequence(isDarkMode),
-                        if (_controller.state.showGif) ...[
-                          const SizedBox(height: _gifSpacing),
-                          if (_currentGif == 0)
-                            _buildGifDisplay(_numberString[0], true)
-                          else if (_currentGif == 1)
-                            _buildGifDisplay(_numberString[1], false),
-                          DigitAnimation(
-                              text: _numberString,
-                              speed: 3000,
-                              style: AppStyles.getHeadLineStyle2(isDarkMode)
-                                  .copyWith(fontSize: 64)),
-                        ],
-                        if (_controller.state.showContinue)
-                          const PulsingEffect(),
+                        SafeArea(
+                          child: ListView(
+                            padding: const EdgeInsets.all(_defaultPadding),
+                            children: [
+                              _buildTextSequence(isDarkMode),
+                              if (_controller.state.showGif) ...[
+                                const SizedBox(height: _gifSpacing),
+                                if (_currentGif == 0)
+                                  _buildGifDisplay(_numberString[0], true)
+                                else if (_currentGif == 1)
+                                  _buildGifDisplay(_numberString[1], false),
+                                DigitAnimation(
+                                    text: _numberString,
+                                    speed: 3000,
+                                    style:
+                                        AppStyles.getHeadLineStyle2(isDarkMode)
+                                            .copyWith(fontSize: 64)),
+                              ],
+                              if (_controller.state.showContinue)
+                                const PulsingEffect(),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: 16,
+                          bottom: 16,
+                          child: Opacity(
+                            opacity: _controller.state.showGif ? 1.0 : 0.5,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              child: AbsorbPointer(
+                                absorbing: !_controller.state.showGif,
+                                child: NumberSelection(
+                                  isTwoDigit: true,
+                                  onNumberSelected: (number) {
+                                    if (number >= 11 && number <= 99) {
+                                      setState(() {
+                                        _numberString = number.toString();
+                                        _currentGif = 0;
+                                        _gifController.reset();
+                                        _isResetting = true;
+                                        _recentNumbers.add(_numberString);
+                                        if (_recentNumbers.length >
+                                            _maxRecentHistory) {
+                                          _recentNumbers.removeAt(0);
+                                        }
+                                        Future.delayed(
+                                            const Duration(milliseconds: 100),
+                                            () {
+                                          if (mounted) {
+                                            setState(() {
+                                              _isResetting = false;
+                                              _controller.state.showContinue =
+                                                  false;
+                                            });
+                                          }
+                                        });
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: -140,
+                          bottom: -40,
+                          child: SizedBox(
+                            width: teacherSize,
+                            height: teacherSize,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(200),
+                              child: !_controller.state.showGif
+                                  ? (!_controller.state.showContinue
+                                      ? Gif(
+                                          image: const AssetImage(
+                                              AppMedia.teacherGif),
+                                          autostart: Autostart.loop,
+                                          controller: _teacherController,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.asset(
+                                          AppMedia.teacherRest,
+                                          fit: BoxFit.cover,
+                                        ))
+                                  : Image.asset(
+                                      AppMedia.teacherRest,
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
+                          ),
+                        ).animate(
+                          target: _controller.state.showGif ? 1 : 0,
+                          effects: [
+                            const ScaleEffect(
+                              begin: Offset(1, 1),
+                              end: Offset(0.6, 0.6),
+                              duration: Duration(milliseconds: 500),
+                            ),
+                            const MoveEffect(
+                              begin: Offset(0, -50),
+                              end: Offset(0, 100),
+                              duration: Duration(milliseconds: 500),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),
-                  Positioned(
-                    right: -140,
-                    bottom: -40,
-                    child: SizedBox(
-                      width: teacherSize,
-                      height: teacherSize,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(200),
-                        child: !_controller.state.showGif
-                            ? (!_controller.state.showContinue
-                                ? Gif(
-                                    image:
-                                        const AssetImage(AppMedia.teacherGif),
-                                    autostart: Autostart.loop,
-                                    controller: _teacherController,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    AppMedia.teacherRest,
-                                    fit: BoxFit.cover,
-                                  ))
-                            : Image.asset(
-                                AppMedia.teacherRest,
-                                fit: BoxFit.cover,
-                              ),
-                      ),
-                    ),
-                  ).animate(
-                    target: _controller.state.showGif ? 1 : 0,
-                    effects: [
-                      const ScaleEffect(
-                        begin: Offset(1, 1),
-                        end: Offset(0.6, 0.6),
-                        duration: Duration(milliseconds: 500),
-                      ),
-                      const MoveEffect(
-                        begin: Offset(0, -50),
-                        end: Offset(0, 100),
-                        duration: Duration(milliseconds: 500),
-                      ),
-                    ],
-                  )
                 ],
-              ),
-            ),
-          );
+              ));
         });
   }
 }
