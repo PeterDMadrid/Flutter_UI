@@ -26,7 +26,9 @@ class _IntroductionState extends State<Introduction>
   late final LessonController _controller;
   late final GifController _teacherController;
   final FlutterTts _flutterTts = FlutterTts();
-  bool _isTtsEnabled = false;
+  bool _isTtsEnabled = true;
+  bool _isVoiceInitialized = false;
+  bool _isInitializing = true;
   final List<List<IntroText>> _numberSequences = [
     [
       const IntroText(text: "Hi, %name%! Are you ready to learn some signs?"),
@@ -109,21 +111,40 @@ class _IntroductionState extends State<Introduction>
     super.initState();
     _flutterTts.setLanguage("en-US");
     _flutterTts.setSpeechRate(1);
-    _flutterTts.setPitch(2.0);      
+    _flutterTts.setPitch(1.0);
 
-     _flutterTts.getVoices.then((voices) {
-    for (var voice in voices) {
-      if (voice.contains('female')) { 
-        _flutterTts.setVoice(voice);
-        break;
+    _initializeVoice().then((_) {
+      // Only set up the controller after voice is initialized
+      _controller = LessonController(
+        setState: setState,
+        numberSequences: _numberSequences,
+      );
+      _teacherController = GifController(vsync: this);
+
+      // Force a rebuild after everything is initialized
+      if (mounted)
+        setState(() {
+          _isVoiceInitialized = true;
+          _isInitializing = false;
+        });
+    });
+  }
+
+  Future<void> _initializeVoice() async {
+    try {
+      List<dynamic> voices = await _flutterTts.getVoices;
+      for (var voice in voices) {
+        print(voice);
       }
+      await _flutterTts.setVoice({
+        'name': 'Google UK English Female',
+        'locale': 'en-GB',
+      });
+      // Optional: add a small delay to ensure voice settings are applied
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      print('Error initializing TTS voice: $e');
     }
-  });
-    _controller = LessonController(
-      setState: setState,
-      numberSequences: _numberSequences,
-    );
-    _teacherController = GifController(vsync: this);
   }
 
   String _processText(String text) {
@@ -136,17 +157,43 @@ class _IntroductionState extends State<Introduction>
     _teacherController.dispose();
     super.dispose();
   }
+
   void _toggleTts() {
-  setState(() {
-    _isTtsEnabled = !_isTtsEnabled;
-  }); 
-  if (!_isTtsEnabled) {
-    _flutterTts.stop();
+    setState(() {
+      _isTtsEnabled = !_isTtsEnabled;
+    });
+    if (!_isTtsEnabled) {
+      _flutterTts.stop();
     }
   }
+
+  Future<void> _speakText(String text) async {
+    await _flutterTts.stop();
+    await _flutterTts.speak(text);
+  }
+
   @override
   Widget build(BuildContext context) {
     double teacherSize = MediaQuery.of(context).size.width * 1;
+    if (_isInitializing) {
+      return ValueListenableBuilder(
+          valueListenable: ThemeManager().isDarkModeNotifier,
+          builder: (context, isDarkMode, child) {
+            return Scaffold(
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              appBar: AppBar(
+                backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+                iconTheme: IconThemeData(
+                    color: isDarkMode ? Colors.white : Colors.black87),
+              ),
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            );
+          });
+    }
     return ValueListenableBuilder(
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {
@@ -155,20 +202,22 @@ class _IntroductionState extends State<Introduction>
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               iconTheme: IconThemeData(
                   color: isDarkMode ? Colors.white : Colors.black87),
-                  actions: [
-            IconButton(
-              icon: Icon(
-                _isTtsEnabled ? Icons.volume_up : Icons.volume_off,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-              onPressed: _toggleTts,
-            ),
-          ],
-
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    _isTtsEnabled ? Icons.volume_up : Icons.volume_off,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: _toggleTts,
+                ),
+              ],
             ),
             backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
             body: GestureDetector(
-              onTap: _controller.handleTap,
+              onTap: () {
+                _controller.handleTap();
+                _flutterTts.stop();
+              },
               behavior: HitTestBehavior.translucent,
               child: Stack(
                 fit: StackFit.expand,
@@ -181,9 +230,11 @@ class _IntroductionState extends State<Introduction>
                             (i) {
                           final isCurrentText =
                               i == _controller.state.currentTextIndex;
-                              if (_isTtsEnabled && isCurrentText) {
-                        _flutterTts.speak(_processText(
-                            _controller.state.currentTexts[i].text));
+                          if (_isTtsEnabled &&
+                              isCurrentText &&
+                              !_controller.state.showGif) {
+                            _flutterTts.speak(_processText(
+                                _controller.state.currentTexts[i].text));
                           }
                           return Padding(
                             padding:
