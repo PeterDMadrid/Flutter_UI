@@ -12,6 +12,7 @@ import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
 import 'package:flutter_hands/screens/lesson/widgets/digit_animation.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class TwoDigitsScreen extends StatefulWidget {
   const TwoDigitsScreen({super.key});
@@ -36,7 +37,10 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   late final LessonController _controller;
   late final GifController _gifController;
   late final GifController _teacherController;
-
+  final FlutterTts _flutterTts = FlutterTts();
+  bool _isTtsEnabled = true;
+  bool _isVoiceInitialized = false;
+  bool _isInitializing = true;
   final List<List<IntroText>> _numberSequences = [
     [
       const IntroText(text: "What about a two digit number?"),
@@ -62,18 +66,56 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
       },
     );
 
-    _gifController = GifController(vsync: this);
+    _gifController = GifController(vsync: this)..addListener(_handleGifCompletion);;
     _gifController.addListener(_handleGifCompletion);
 
     _teacherController = GifController(vsync: this);
+    //tts
+    _flutterTts.setLanguage("en-US");
+    _flutterTts.setSpeechRate(1);
+    _flutterTts.setPitch(1.0);
+
+    _initializeVoice().then((_) {
+    if (mounted) {
+      setState(() {
+        _isVoiceInitialized = true;
+        _isInitializing = false;
+      });
+    }
+  });
+  }
+  Future<void> _initializeVoice() async {
+    try {
+      List<dynamic> voices = await _flutterTts.getVoices;
+      for (var voice in voices) {
+        print(voice);
+      }
+      await _flutterTts.setVoice({
+        'name': 'Google UK English Female',
+        'locale': 'en-GB',
+      });
+      // Optional: add a small delay to ensure voice settings are applied
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      print('Error initializing TTS voice: $e');
+    }
   }
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _gifController.removeListener(_handleGifCompletion);
     _gifController.dispose();
     _teacherController.dispose();
     super.dispose();
+  }
+  void _toggleTts() {
+    setState(() {
+      _isTtsEnabled = !_isTtsEnabled;
+    });
+    if (!_isTtsEnabled) {
+      _flutterTts.stop();
+    }
   }
 
   // At class level
@@ -166,6 +208,10 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
         _controller.state.currentTextIndex + 1,
         (i) {
           final isCurrentText = i == _controller.state.currentTextIndex;
+          if (_isTtsEnabled && isCurrentText && !_controller.state.showGif) {
+             _flutterTts.awaitSpeakCompletion(true);
+             _flutterTts.speak(_processText(_controller.state.currentTexts[i].text));
+                }
           return Padding(
             padding: EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
             child: ReadingEffect(
@@ -199,6 +245,15 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                 backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
                 iconTheme: IconThemeData(
                     color: isDarkMode ? Colors.white : Colors.black87),
+                    actions: [
+                      IconButton(
+                        icon: Icon(
+                          _isTtsEnabled ? Icons.volume_up : Icons.volume_off,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                        onPressed: _toggleTts,
+                      ),
+                    ],
               ),
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               body: Stack(

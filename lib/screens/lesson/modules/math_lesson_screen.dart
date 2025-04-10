@@ -9,7 +9,7 @@ import 'package:flutter_hands/base/res/global/theme_provider.dart';
 import 'package:flutter_hands/screens/lesson/widgets/intro_text.dart';
 import 'package:flutter_hands/base/res/animations/pulsing_effect.dart';
 import 'package:flutter_hands/base/res/animations/reading_effect.dart';
-
+import 'package:flutter_tts/flutter_tts.dart';
 class MathLessonScreen extends StatefulWidget {
   const MathLessonScreen({super.key});
 
@@ -32,7 +32,10 @@ class _MathLessonScreenState extends State<MathLessonScreen>
   late final GifController _firstGifController;
   late final GifController _secondGifController;
   late final GifController _teacherController;
-
+  final FlutterTts _flutterTts = FlutterTts();
+  bool _isTtsEnabled = true;
+  bool _isVoiceInitialized = false;
+  bool _isInitializing = true;
   @override
   void initState() {
     super.initState();
@@ -56,8 +59,43 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     _secondGifController = GifController(vsync: this);
     _secondGifController.addListener(_handleSecondGifCompletion);
     _teacherController = GifController(vsync: this);
+    _flutterTts.setLanguage("en-US");
+    _flutterTts.setSpeechRate(1);
+    _flutterTts.setPitch(1.0);
+
+    _initializeVoice().then((_) {
+      // Only set up the controller after voice is initialized
+      _controller = LessonController(
+        setState: setState,
+        numberSequences: _numberSequences,
+      );
+      _teacherController = GifController(vsync: this);
+
+      // Force a rebuild after everything is initialized
+      if (mounted)
+        setState(() {
+          _isVoiceInitialized = true;
+          _isInitializing = false;
+        });
+    });
   }
 
+  Future<void> _initializeVoice() async {
+    try {
+      List<dynamic> voices = await _flutterTts.getVoices;
+      for (var voice in voices) {
+        print(voice);
+      }
+      await _flutterTts.setVoice({
+        'name': 'Google UK English Female',
+        'locale': 'en-GB',
+      });
+      // Optional: add a small delay to ensure voice settings are applied
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      print('Error initializing TTS voice: $e');
+    }
+  }
   final List<List<IntroText>> _numberSequences = [
     [
       const IntroText(text: "Good job on making this far!"),
@@ -173,6 +211,9 @@ class _MathLessonScreenState extends State<MathLessonScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(_controller.state.currentTextIndex + 1, (i) {
         final isCurrentText = i == _controller.state.currentTextIndex;
+        if (_isTtsEnabled && isCurrentText && !_controller.state.showGif) {
+            _flutterTts.speak(_processText(_controller.state.currentTexts[i].text));
+             }
         return Padding(
           padding: EdgeInsets.only(bottom: isCurrentText ? 0 : 20),
           child: ReadingEffect(
@@ -193,7 +234,14 @@ class _MathLessonScreenState extends State<MathLessonScreen>
       }),
     );
   }
-
+  void _toggleTts() {
+    setState(() {
+      _isTtsEnabled = !_isTtsEnabled;
+    });
+    if (!_isTtsEnabled) {
+      _flutterTts.stop();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     double teacherSize = MediaQuery.of(context).size.width * 1;
@@ -205,6 +253,15 @@ class _MathLessonScreenState extends State<MathLessonScreen>
                 backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
                 iconTheme: IconThemeData(
                     color: isDarkMode ? Colors.white : Colors.black87),
+                    actions: [
+                IconButton(
+                  icon: Icon(
+                    _isTtsEnabled ? Icons.volume_up : Icons.volume_off,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: _toggleTts,
+                  ),
+                ],
               ),
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               body: GestureDetector(
@@ -275,6 +332,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _firstGifController.removeListener(_handleFirstGifCompletion);
     _secondGifController.removeListener(_handleSecondGifCompletion);
 
