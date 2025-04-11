@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -56,6 +57,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
   int _score = 0;
 
   bool showGif = false;
+  bool showErrMessage = false;
   late final GifController _teacherController;
   bool _lastAnswerCorrect = false;
 
@@ -162,10 +164,15 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
         setState(() {
           _showCapturedImage = false;
           _capturedImageFile = null;
+          showErrMessage = true;
+          showGif = true;
+          Future.delayed(Duration(seconds: 4), () {
+            setState(() {
+              showGif = false;
+              showErrMessage = false;
+            });
+          });
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No hand detected. Please try again.')),
-        );
       }
 
       setState(() {
@@ -176,6 +183,14 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
         _isProcessing = false;
         _showCapturedImage = false;
         _capturedImageFile = null;
+        showErrMessage = true;
+        showGif = true;
+        Future.delayed(Duration(seconds: 4), () {
+            setState(() {
+              showGif = false;
+              showErrMessage = false;
+            });
+          });
       });
     }
   }
@@ -229,9 +244,11 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
         currentAnswer.clear();
         _showNextButton = false;
         showGif = false;
+        showErrMessage = false;
       } else {
         _showResults(isDarkMode);
         showGif = false;
+        showErrMessage = false;
       }
     });
   }
@@ -579,13 +596,15 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
                         Align(
                           alignment: const Alignment(-0.1, -0.7),
                           child: Text(
-                            _lastAnswerCorrect
+                            !showErrMessage
+                            ? _lastAnswerCorrect
                                 ? positivePhrases[
                                     _quizController.currentQuestionIndex %
                                         positivePhrases.length]
                                 : negativePhrases[
                                     _quizController.currentQuestionIndex %
-                                        negativePhrases.length],
+                                        negativePhrases.length]
+                            : handVisibilityPhrases[Random().nextInt(4)],
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

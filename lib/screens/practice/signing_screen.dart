@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import '../../main.dart';
 import 'package:gif/gif.dart';
 import 'package:camera/camera.dart';
@@ -52,6 +53,7 @@ class _SigningScreenState extends State<SigningScreen>
 
   //teacher gif
   bool showGif = false;
+  bool showErrMessage = false;
   late final GifController _teacherController;
   bool _lastAnswerCorrect = false;
 
@@ -129,21 +131,30 @@ class _SigningScreenState extends State<SigningScreen>
         setState(() {
           _showCapturedImage = false;
           _capturedImageFile = null;
+          showGif = true;
+          showErrMessage = true;
+          Future.delayed(Duration(seconds: 4), () {
+            setState(() {
+              showGif = false;
+              showErrMessage = false;
+            });
+          });
         });
-        // Show a message to the user
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No hand detected. Please try again.')),
-        );
       }
     } catch (e) {
       setState(() {
         _isProcessing = false;
         _showCapturedImage = false;
         _capturedImageFile = null;
+        showGif = true;
+        showErrMessage = true;
+        Future.delayed(Duration(seconds: 4), () {
+            setState(() {
+              showGif = false;
+              showErrMessage = false;
+            });
+          });
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
     }
   }
 
@@ -272,9 +283,11 @@ class _SigningScreenState extends State<SigningScreen>
         _signingController.nextQuestion();
         _showNextButton = false;
         showGif = false;
+        showErrMessage = false;
       } else {
         _showResults();
         showGif = false;
+        showErrMessage = false;
       }
     });
   }
@@ -493,23 +506,24 @@ class _SigningScreenState extends State<SigningScreen>
                           fit: BoxFit.contain,
                         ),
                         Align(
-                          alignment: const Alignment(-0.1, -0.7),
-                          child: Text(
-                            _lastAnswerCorrect
-                                ? positivePhrases[
-                                    _signingController.currentQuestionIndex %
-                                        positivePhrases.length]
-                                : negativePhrases[
-                                    _signingController.currentQuestionIndex %
-                                        negativePhrases.length],
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+                            alignment: const Alignment(-0.1, -0.7),
+                            child: Text(
+                              !showErrMessage
+                                  ? _lastAnswerCorrect
+                                      ? positivePhrases[_signingController
+                                              .currentQuestionIndex %
+                                          positivePhrases.length]
+                                      : negativePhrases[_signingController
+                                              .currentQuestionIndex %
+                                          negativePhrases.length]
+                                  : handVisibilityPhrases[Random().nextInt(4)],
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            )),
                       ],
                     ),
                   ),
