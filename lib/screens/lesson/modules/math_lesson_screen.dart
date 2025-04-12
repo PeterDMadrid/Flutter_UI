@@ -64,20 +64,13 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     _flutterTts.setPitch(1.0);
 
     _initializeVoice().then((_) {
-      // Only set up the controller after voice is initialized
-      _controller = LessonController(
-        setState: setState,
-        numberSequences: _numberSequences,
-      );
-      _teacherController = GifController(vsync: this);
-
-      // Force a rebuild after everything is initialized
-      if (mounted)
-        setState(() {
-          _isVoiceInitialized = true;
-          _isInitializing = false;
-        });
-    });
+    if (mounted) {
+      setState(() {
+        _isVoiceInitialized = true;
+        _isInitializing = false;
+      });
+    }
+  });
   }
 
   Future<void> _initializeVoice() async {
@@ -245,6 +238,25 @@ class _MathLessonScreenState extends State<MathLessonScreen>
   @override
   Widget build(BuildContext context) {
     double teacherSize = MediaQuery.of(context).size.width * 1;
+    if (_isInitializing) {
+      return ValueListenableBuilder(
+          valueListenable: ThemeManager().isDarkModeNotifier,
+          builder: (context, isDarkMode, child) {
+            return Scaffold(
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              appBar: AppBar(
+                backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+                iconTheme: IconThemeData(
+                    color: isDarkMode ? Colors.white : Colors.black87),
+              ),
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            );
+          });
+    }
     return ValueListenableBuilder(
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {

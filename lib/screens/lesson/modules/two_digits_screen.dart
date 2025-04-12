@@ -237,6 +237,25 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   @override
   Widget build(BuildContext context) {
     double teacherSize = MediaQuery.of(context).size.width * 1;
+    if (_isInitializing) {
+      return ValueListenableBuilder(
+          valueListenable: ThemeManager().isDarkModeNotifier,
+          builder: (context, isDarkMode, child) {
+            return Scaffold(
+              backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+              appBar: AppBar(
+                backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
+                iconTheme: IconThemeData(
+                    color: isDarkMode ? Colors.white : Colors.black87),
+              ),
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            );
+          });
+    }
     return ValueListenableBuilder(
         valueListenable: ThemeManager().isDarkModeNotifier,
         builder: (context, isDarkMode, child) {
