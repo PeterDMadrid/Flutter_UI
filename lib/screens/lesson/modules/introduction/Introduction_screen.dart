@@ -167,11 +167,6 @@ class _IntroductionState extends State<Introduction>
     }
   }
 
-  Future<void> _speakText(String text) async {
-    await _flutterTts.stop();
-    await _flutterTts.speak(text);
-  }
-
   @override
   Widget build(BuildContext context) {
     double teacherSize = MediaQuery.of(context).size.width * 1;
