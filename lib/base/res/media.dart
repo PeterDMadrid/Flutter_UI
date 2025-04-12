@@ -12,6 +12,9 @@ class AppMedia {
   //logo
   static const mathandsLogo = '$_baseMedia/logo.png';
 
+  //lock element
+  static const lock = '$_baseMedia/lock.png';
+
   //idle character
   static const teacherGif = '$_baseMediaForGif/teacher_talk.gif';
   static const teacherRest = '$_baseMediaForFrames/teacher_rest.png';

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_hands/base/res/media.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
+import 'dart:ui';
 
 class LessonCard extends StatelessWidget {
   const LessonCard({
@@ -9,6 +11,8 @@ class LessonCard extends StatelessWidget {
     required this.lessonSubtitle,
     required this.lessonIcon,
     required this.onPressed,
+    required this.isPrevDone,
+    required this.preReq,
     this.index = 0,
   });
 
@@ -17,6 +21,8 @@ class LessonCard extends StatelessWidget {
   final String lessonIcon;
   final VoidCallback onPressed;
   final int index;
+  final bool isPrevDone;
+  final String preReq;
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +152,52 @@ class LessonCard extends StatelessWidget {
               opacity: const AlwaysStoppedAnimation(0.8),
             ),
           ),
+          // Locked Overlay
+          if (!isPrevDone) ...[
+            // Semi-transparent overlay with blur
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.4),
+                  ),
+                ),
+              ),
+            ),
+            // Lock icon and message directly on the blurred background
+            Positioned.fill(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      AppMedia.lock,
+                      width: 50,
+                      height: 50,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Complete $preReq first",
+                      style: AppStyles.paragraph1.copyWith(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.8),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
