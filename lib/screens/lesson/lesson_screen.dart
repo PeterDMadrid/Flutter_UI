@@ -136,12 +136,20 @@ class _LessonScreenState extends State<LessonScreen> {
                 lessonIcon: AppMedia.mathLessonPoster,
                 isPrevDone: isTwoDigitDone,
                 preReq: "Two Digits lesson",
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MathLessonScreen()),
+                      builder: (context) => MathLessonScreen(
+                        name: widget.name,
+                      ),
+                    ),
                   );
+                  if (result == true) {
+                    setState(() {
+                      futureUser = userService.fetchUserData(widget.name);
+                    });
+                  }
                 },
               ),
               const SizedBox(

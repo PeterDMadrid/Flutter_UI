@@ -36,13 +36,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
       UserSession().setUserData(widget.initialUserData!);
     } else {
-
       _loadUserDataFromSession();
     }
   }
 
   void _loadUserDataFromSession() {
-
     final session = UserSession();
     if (!session.isLoading && session.isInitialized) {
       setState(() {
@@ -87,8 +85,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
       LessonScreen(
         name: username ?? "Guest",
       ),
-      const PracticeScreen(),
-      const ChallengeScreen(),
+      PracticeScreen(
+        name: username ?? "Guest",
+      ),
+      ChallengeScreen(
+        name: username ?? "Guest",
+      ),
       ProfileScreen(
         name: username ?? "Guest",
         level: currentLevel,
