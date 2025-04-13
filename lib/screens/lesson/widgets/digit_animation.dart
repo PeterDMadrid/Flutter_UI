@@ -33,21 +33,19 @@ class DigitAnimation extends StatelessWidget {
                     begin: const Offset(0.2, 0.2),
                     end: const Offset(2.0, 2.0),
                     duration: 500.ms),
-                // Combine the scale down and move animations by removing the delay
-                // from ScaleEffect and matching durations
-                ScaleEffect(
-                    delay: 2000.ms,
-                    begin: const Offset(1.0, 1.0),
-                    end: const Offset(0.5, 0.5),
-                    duration: 600.ms,  // Match the move duration
-                    curve: Curves.easeOut),  // Match the move curve
                 MoveEffect(
                   delay: 2000.ms,
-                  begin: const Offset(0, -350),
+                  begin: const Offset(0, 50),
                   end: const Offset(0, 0),
                   duration: 600.ms,
                   curve: Curves.easeOut,
                 ),
+                ScaleEffect(
+                    delay: 2000.ms,
+                    begin: const Offset(1.0, 1.0),
+                    end: const Offset(0.5, 0.5),
+                    duration: 600.ms,
+                    curve: Curves.easeOut),
               ],
             ),
           ),

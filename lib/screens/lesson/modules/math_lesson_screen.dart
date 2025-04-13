@@ -40,8 +40,8 @@ class _MathLessonScreenState extends State<MathLessonScreen>
   late final GifController _teacherController;
   final FlutterTts _flutterTts = FlutterTts();
   bool _isTtsEnabled = true;
-  bool _isVoiceInitialized = false;
   bool _isInitializing = true;
+  bool _currentTextSpeaking = false;
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
           twoDigit = false;
           isSubtraction = true;
           generateNumberForSubtraction();
-         _updateMathLessonProgress(); // This will generate a new number and update the state
+          _updateMathLessonProgress(); // This will generate a new number and update the state
         },
         goBackToLessonScreen: () {
           Navigator.pop(context, true);
@@ -74,7 +74,6 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     _initializeVoice().then((_) {
       if (mounted) {
         setState(() {
-          _isVoiceInitialized = true;
           _isInitializing = false;
         });
       }
@@ -116,10 +115,11 @@ class _MathLessonScreenState extends State<MathLessonScreen>
 
   Future<void> _initializeVoice() async {
     try {
-      List<dynamic> voices = await _flutterTts.getVoices;
-      for (var voice in voices) {
-        print(voice);
-      }
+      // only print when selecting voice
+      // List<dynamic> voices = await _flutterTts.getVoices;
+      // for (var voice in voices) {
+      //   print(voice);
+      // }
       await _flutterTts.setVoice({
         'name': 'Google UK English Female',
         'locale': 'en-GB',
@@ -246,7 +246,11 @@ class _MathLessonScreenState extends State<MathLessonScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(_controller.state.currentTextIndex + 1, (i) {
         final isCurrentText = i == _controller.state.currentTextIndex;
-        if (_isTtsEnabled && isCurrentText && !_controller.state.showGif) {
+        if (_isTtsEnabled &&
+            isCurrentText &&
+            !_controller.state.showGif &&
+            !_currentTextSpeaking) {
+          _currentTextSpeaking = true;
           _flutterTts
               .speak(_processText(_controller.state.currentTexts[i].text));
         }
@@ -260,7 +264,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
                     ? AppStyles.headLineStyle2.copyWith(color: Colors.white54)
                     : AppStyles.lightHeadLineStyle2
                         .copyWith(color: const Color.fromARGB(137, 17, 17, 17)),
-            speed: 30,
+            speed: 75,
             animate: isCurrentText,
             onAnimationComplete: isCurrentText
                 ? () => setState(() => _controller.state.showContinue = true)
@@ -278,6 +282,20 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     if (!_isTtsEnabled) {
       _flutterTts.stop();
     }
+  }
+
+  void _stopSpeech() {
+    if (!_controller.state.showContinue) {
+      return;
+    }
+    _flutterTts.stop();
+  }
+
+  void _setSpeakingDefault() {
+    if (!_controller.state.showContinue) {
+      return;
+    }
+    _currentTextSpeaking = false;
   }
 
   @override
@@ -342,7 +360,11 @@ class _MathLessonScreenState extends State<MathLessonScreen>
                 ),
                 backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
                 body: GestureDetector(
-                  onTap: _controller.handleTap,
+                  onTap: () {
+                    _stopSpeech();
+                    _setSpeakingDefault();
+                    _controller.handleTap();
+                  },
                   behavior: HitTestBehavior.opaque,
                   child: Stack(children: [
                     SafeArea(

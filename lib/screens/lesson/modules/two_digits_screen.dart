@@ -32,7 +32,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   static const double _defaultPadding = 16.0;
   static const double _gifSpacing = 35.0;
   static const double _digitSpacing = 5.0;
-  static const int _animationSpeed = 30;
+  static const int _animationSpeed = 75;
 
   // State variables
   int _currentGif = 0;
@@ -44,8 +44,8 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   late final GifController _teacherController;
   final FlutterTts _flutterTts = FlutterTts();
   bool _isTtsEnabled = true;
-  bool _isVoiceInitialized = false;
   bool _isInitializing = true;
+  bool _currentTextSpeaking = false;
   final List<List<IntroText>> _numberSequences = [
     [
       const IntroText(text: "What about a two digit number?"),
@@ -85,7 +85,6 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     _initializeVoice().then((_) {
       if (mounted) {
         setState(() {
-          _isVoiceInitialized = true;
           _isInitializing = false;
         });
       }
@@ -127,10 +126,11 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
 
   Future<void> _initializeVoice() async {
     try {
-      List<dynamic> voices = await _flutterTts.getVoices;
-      for (var voice in voices) {
-        print(voice);
-      }
+      // only print if seelcting voice
+      // List<dynamic> voices = await _flutterTts.getVoices;
+      // for (var voice in voices) {
+      //   print(voice);
+      // }
       await _flutterTts.setVoice({
         'name': 'Google UK English Female',
         'locale': 'en-GB',
@@ -160,6 +160,20 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     }
   }
 
+  void _stopSpeech() {
+    if (!_controller.state.showContinue) {
+      return;
+    }
+    _flutterTts.stop();
+  }
+
+  void _setSpeakingDefault() {
+    if (!_controller.state.showContinue) {
+      return;
+    }
+    _currentTextSpeaking = false;
+  }
+
   // At class level
   final List<String> _recentNumbers = [];
   final int _maxRecentHistory = 10;
@@ -167,6 +181,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
   void generateNumber() {
     setState(() {
       _isResetting = true;
+      submitted = false;
       int num;
 
       do {
@@ -194,12 +209,17 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     });
   }
 
+  bool submitted = false;
+
   void _handleGifCompletion() {
     if (_isResetting) return;
 
     if (_numberString[0] == _numberString[1]) {
       _controller.state.showContinue = true;
-      _updateTwoDigitsProgress();
+      if (!submitted) {
+        _updateTwoDigitsProgress();
+        submitted = true;
+      }
     } else if (_gifController.isCompleted) {
       setState(() {
         if (_currentGif < 1) {
@@ -252,7 +272,11 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
         _controller.state.currentTextIndex + 1,
         (i) {
           final isCurrentText = i == _controller.state.currentTextIndex;
-          if (_isTtsEnabled && isCurrentText && !_controller.state.showGif) {
+          if (_isTtsEnabled &&
+              isCurrentText &&
+              !_controller.state.showGif &&
+              !_currentTextSpeaking) {
+            _currentTextSpeaking = true;
             _flutterTts.awaitSpeakCompletion(true);
             _flutterTts
                 .speak(_processText(_controller.state.currentTexts[i].text));
@@ -315,7 +339,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
             }),
       );
     }
-    
+
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
@@ -344,7 +368,11 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                 body: Stack(
                   children: [
                     GestureDetector(
-                      onTap: _controller.handleTap,
+                      onTap: () {
+                        _stopSpeech();
+                        _setSpeakingDefault();
+                        _controller.handleTap();
+                      },
                       behavior: HitTestBehavior.translucent,
                       child: Stack(
                         fit: StackFit.expand,
@@ -386,6 +414,8 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
                                     onNumberSelected: (number) {
                                       if (number >= 11 && number <= 99) {
                                         setState(() {
+                                          submitted = false;
+                                          _currentTextSpeaking = false;
                                           _numberString = number.toString();
                                           _currentGif = 0;
                                           _gifController.reset();

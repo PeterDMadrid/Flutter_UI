@@ -30,8 +30,8 @@ class _IntroductionState extends State<Introduction>
   late final GifController _teacherController;
   final FlutterTts _flutterTts = FlutterTts();
   bool _isTtsEnabled = true;
-  bool _isVoiceInitialized = false;
   bool _isInitializing = true;
+  bool _currentTextSpeaking = false;
   final List<List<IntroText>> _numberSequences = [
     [
       const IntroText(text: "Hi, %name%! Are you ready to learn some signs?"),
@@ -160,7 +160,6 @@ class _IntroductionState extends State<Introduction>
       // Force a rebuild after everything is initialized
       if (mounted)
         setState(() {
-          _isVoiceInitialized = true;
           _isInitializing = false;
         });
     });
@@ -168,10 +167,11 @@ class _IntroductionState extends State<Introduction>
 
   Future<void> _initializeVoice() async {
     try {
-      List<dynamic> voices = await _flutterTts.getVoices;
-      for (var voice in voices) {
-        print(voice);
-      }
+      // only print if seelcting voice
+      // List<dynamic> voices = await _flutterTts.getVoices;
+      // for (var voice in voices) {
+      //   print(voice);
+      // }
       await _flutterTts.setVoice({
         'name': 'Google UK English Female',
         'locale': 'en-GB',
@@ -201,6 +201,25 @@ class _IntroductionState extends State<Introduction>
     if (!_isTtsEnabled) {
       _flutterTts.stop();
     }
+  }
+
+  void _stopSpeech() {
+    if (!_controller.state.showContinue) {
+      return;
+    }
+    _flutterTts.stop();
+  }
+
+  void _setSpeakingDefault() {
+    if (!_controller.state.showContinue) {
+      return;
+    }
+    _currentTextSpeaking = false;
+  }
+
+  void _handleNumberSelection(int number) {
+    _currentTextSpeaking = false;
+    _controller.handleNumberSelection(number);
   }
 
   @override
@@ -266,8 +285,9 @@ class _IntroductionState extends State<Introduction>
               backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
               body: GestureDetector(
                 onTap: () {
+                  _stopSpeech();
+                  _setSpeakingDefault();
                   _controller.handleTap();
-                  _flutterTts.stop();
                 },
                 behavior: HitTestBehavior.translucent,
                 child: Stack(
@@ -283,7 +303,9 @@ class _IntroductionState extends State<Introduction>
                                 i == _controller.state.currentTextIndex;
                             if (_isTtsEnabled &&
                                 isCurrentText &&
-                                !_controller.state.showGif) {
+                                !_controller.state.showGif &&
+                                !_currentTextSpeaking) {
+                              _currentTextSpeaking = true;
                               _flutterTts.speak(_processText(
                                   _controller.state.currentTexts[i].text));
                             }
@@ -302,7 +324,7 @@ class _IntroductionState extends State<Introduction>
                                             .copyWith(
                                                 color: const Color.fromARGB(
                                                     137, 17, 17, 17)),
-                                speed: 30,
+                                speed: 75,
                                 animate: isCurrentText,
                                 onAnimationComplete: isCurrentText
                                     ? () => setState(() =>
@@ -341,7 +363,7 @@ class _IntroductionState extends State<Introduction>
                       bottom: 16,
                       child: NumberSelection(
                         isTwoDigit: false,
-                        onNumberSelected: _controller.handleNumberSelection,
+                        onNumberSelected: _handleNumberSelection,
                       ),
                     ),
                     Positioned(
