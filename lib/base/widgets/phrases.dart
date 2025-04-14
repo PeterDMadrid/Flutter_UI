@@ -27,6 +27,6 @@ final List<String> negativePhrases = [
 final List<String> handVisibilityPhrases = [
   "Can you show me\nyour whole hand?",
   "Make sure your entire\nhand is in the picture!",
-  "Make sure yourwhole \nhand is in the camera!",
+  "Make sure your whole \nhand is in the camera!",
   "Can we can see your\nwhole hand?"
 ];

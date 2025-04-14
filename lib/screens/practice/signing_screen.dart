@@ -506,7 +506,7 @@ class _SigningScreenState extends State<SigningScreen>
                           fit: BoxFit.contain,
                         ),
                         Align(
-                            alignment: const Alignment(-0.1, -0.7),
+                            alignment: const Alignment(-0.1, -0.825),
                             child: Text(
                               !showErrMessage
                                   ? _lastAnswerCorrect

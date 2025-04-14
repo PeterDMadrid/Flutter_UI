@@ -68,7 +68,7 @@ class _MathLessonScreenState extends State<MathLessonScreen>
     _secondGifController.addListener(_handleSecondGifCompletion);
     _teacherController = GifController(vsync: this);
     _flutterTts.setLanguage("en-US");
-    _flutterTts.setSpeechRate(1);
+    _flutterTts.setSpeechRate(0.5);
     _flutterTts.setPitch(1.0);
 
     _initializeVoice().then((_) {

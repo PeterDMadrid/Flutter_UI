@@ -594,7 +594,7 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
                           fit: BoxFit.contain,
                         ),
                         Align(
-                          alignment: const Alignment(-0.1, -0.7),
+                          alignment: const Alignment(-0.1, -0.825),
                           child: Text(
                             !showErrMessage
                             ? _lastAnswerCorrect
