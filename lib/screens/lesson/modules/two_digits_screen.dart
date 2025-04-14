@@ -79,7 +79,7 @@ class _TwoDigitsScreenState extends State<TwoDigitsScreen>
     _teacherController = GifController(vsync: this);
     //tts
     _flutterTts.setLanguage("en-US");
-    _flutterTts.setSpeechRate(1);
+    _flutterTts.setSpeechRate(0.5);
     _flutterTts.setPitch(1.0);
 
     _initializeVoice().then((_) {

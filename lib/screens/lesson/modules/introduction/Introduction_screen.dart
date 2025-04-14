@@ -146,7 +146,7 @@ class _IntroductionState extends State<Introduction>
   void initState() {
     super.initState();
     _flutterTts.setLanguage("en-US");
-    _flutterTts.setSpeechRate(1);
+    _flutterTts.setSpeechRate(0.5);
     _flutterTts.setPitch(1.0);
 
     _initializeVoice().then((_) {
@@ -167,11 +167,10 @@ class _IntroductionState extends State<Introduction>
 
   Future<void> _initializeVoice() async {
     try {
-      // only print if seelcting voice
-      // List<dynamic> voices = await _flutterTts.getVoices;
-      // for (var voice in voices) {
-      //   print(voice);
-      // }
+        List<dynamic> voices = await _flutterTts.getVoices;
+        for (var voice in voices) {
+         print(voice);
+      }
       await _flutterTts.setVoice({
         'name': 'Google UK English Female',
         'locale': 'en-GB',
