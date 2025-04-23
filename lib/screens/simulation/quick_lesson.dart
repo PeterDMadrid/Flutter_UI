@@ -71,7 +71,7 @@ class _QuickLessonState extends State<QuickLesson>
 
   void _setupTts() {
     _flutterTts.setLanguage("en-US");
-    _flutterTts.setSpeechRate(1);
+    _flutterTts.setSpeechRate(0.5);
     _flutterTts.setPitch(1.0);
 
     // Set up TTS completion listener
