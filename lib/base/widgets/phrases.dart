@@ -30,3 +30,11 @@ final List<String> handVisibilityPhrases = [
   "Make sure your whole \nhand is in the camera!",
   "Can we can see your\nwhole hand?"
 ];
+
+final List<String> specialGesturePhrases = [
+  "That's a Rock On gesture!\nI need a number sign.",
+  "I see an Okay sign.\nPlease show a number.",
+  "That's a Notone gesture.\nTry a number sign.",
+  "I see a Nottwo gesture.\nI need a number sign.",
+  "That's an El gesture.\nPlease show a number."
+];
