@@ -83,7 +83,7 @@ class _NumberSelectionState extends State<NumberSelection> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      "Please enter a two-digit number (10-99).",
+                      "Select a number:",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -108,7 +108,8 @@ class _NumberSelectionState extends State<NumberSelection> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      if (_errorMessage != null) // Display error message if it exists
+                      if (_errorMessage !=
+                          null) // Display error message if it exists
                         Text(
                           _errorMessage!,
                           style: TextStyle(
@@ -120,6 +121,47 @@ class _NumberSelectionState extends State<NumberSelection> {
                       ElevatedButton(
                         onPressed: _submitNumber,
                         child: const Text('Submit'),
+                      ),
+                    ] else ...[
+                      Expanded(
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 5,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                          itemCount: 10,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () {
+                                widget.onNumberSelected?.call(index);
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1F4B7A),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFF4A90E2),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    index.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ],
