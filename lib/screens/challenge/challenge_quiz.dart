@@ -99,7 +99,9 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
 
   File? _capturedImageFile;
   bool _showCapturedImage = false;
-
+  bool _isValidDigit = false;
+  String _gestureType = 'unknown';
+  String _specialFeedback = '';
   Future<void> _captureAndPredict(isDarkMode) async {
     if (_isProcessing ||
         _cameraController == null ||
@@ -113,6 +115,10 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
       });
 
       final XFile image = await _cameraController!.takePicture();
+      setState(() {
+        _capturedImageFile = File(image.path);
+        _showCapturedImage = true;
+      });
 
       // Add a timeout to prevent indefinite waiting
       final prediction =
@@ -123,7 +129,9 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
           'prediction': -1,
           'label': 'No hand detected',
           'confidence': 0.0,
-          'handedness': 'Unknown'
+          'handedness': 'Unknown',
+          'is_valid_digit': false,
+          'gesture_type': 'unknown'
         };
       });
 
@@ -132,34 +140,46 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
         _label = prediction['label'] ?? 'Unknown';
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
+        _isValidDigit = prediction['is_valid_digit'] ?? false;
+        _gestureType = prediction['gesture_type'] ?? 'unknown';
         _isProcessing = false;
       });
 
       if (_prediction >= 0 && mounted) {
-        setState(() {
-          final currentQuestion =
-              _quizController.questions[_quizController.currentQuestionIndex];
-          final expectedLength =
-              currentQuestion.correctAnswer.toString().length;
+        if (_isValidDigit) {
+          // Only process valid digits (0-9)
+          setState(() {
+            final currentQuestion =
+                _quizController.questions[_quizController.currentQuestionIndex];
+            final expectedLength =
+                currentQuestion.correctAnswer.toString().length;
 
-          if (expectedLength == 1) {
-            // For single-digit answers (easy mode)
-            currentAnswer.add(_prediction);
-            _handleAnswer([currentAnswer[0]], isDarkMode);
-            _capturedImageFile = File(image.path);
-            _showCapturedImage = true;
-          } else {
-            // For double-digit answers (medium/hard mode)
-            if (currentAnswer.isEmpty) {
+            if (expectedLength == 1) {
+              // For single-digit answers (easy mode)
               currentAnswer.add(_prediction);
-            } else if (currentAnswer.length == 1) {
-              currentAnswer.add(_prediction);
-              _handleAnswer(currentAnswer, isDarkMode);
-              _capturedImageFile = File(image.path);
-              _showCapturedImage = true;
+              _handleAnswer([currentAnswer[0]], isDarkMode);
+            } else {
+              // For double-digit answers (medium/hard mode)
+              if (currentAnswer.isEmpty) {
+                currentAnswer.add(_prediction);
+                // Don't handle answer yet, wait for second digit
+                // Reset processing state to allow second capture
+                _isProcessing = false;
+                _showCapturedImage = false;
+                _capturedImageFile = null;
+              } else if (currentAnswer.length == 1) {
+                currentAnswer.add(_prediction);
+                _handleAnswer(currentAnswer, isDarkMode);
+              }
             }
+          });
+        } else {
+          // Handle special gestures if needed
+          if (_gestureType != 'unknown') {
+            _handleSpecialGesture(
+                _label, isDarkMode); // Use _label instead of _gestureType
           }
-        });
+        }
       } else {
         setState(() {
           _showCapturedImage = false;
@@ -186,13 +206,60 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
         showErrMessage = true;
         showGif = true;
         Future.delayed(Duration(seconds: 4), () {
-            setState(() {
-              showGif = false;
-              showErrMessage = false;
-            });
+          setState(() {
+            showGif = false;
+            showErrMessage = false;
           });
+        });
       });
     }
+  }
+
+// New method to handle special gestures (non-digits)
+  Future<void> _handleSpecialGesture(
+      String gestureLabel, bool isDarkMode) async {
+    // Set to false since this isn't a correct answer for the quiz
+    _lastAnswerCorrect = false;
+
+    // Choose appropriate feedback based on the gesture
+    switch (gestureLabel) {
+      case 'Rockon':
+        _specialFeedback = specialGesturePhrases[0];
+        break;
+      case 'Okay':
+        _specialFeedback = specialGesturePhrases[1];
+        break;
+      case 'Notone':
+        _specialFeedback = specialGesturePhrases[2];
+        break;
+      case 'Nottwo':
+        _specialFeedback = specialGesturePhrases[3];
+        break;
+      case 'El':
+        _specialFeedback = specialGesturePhrases[4];
+        break;
+      default:
+        _specialFeedback =
+            "I don't recognize that gesture.\nPlease show a number.";
+    }
+
+    // Play sound effect for incorrect answer
+    await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
+
+    // Show feedback UI
+    setState(() {
+      showGif = true;
+      _isProcessing = false;
+
+      // Clear the image after a delay
+      Future.delayed(Duration(seconds: 4), () {
+        setState(() {
+          _showCapturedImage = false;
+          _capturedImageFile = null;
+          showGif = false;
+        });
+      });
+    });
   }
 
   Future<void> _initializeAudioPlayer() async {
@@ -597,14 +664,18 @@ class _ChallengeQuizState extends State<ChallengeQuiz>
                           alignment: const Alignment(-0.1, -0.825),
                           child: Text(
                             !showErrMessage
-                            ? _lastAnswerCorrect
-                                ? positivePhrases[
-                                    _quizController.currentQuestionIndex %
-                                        positivePhrases.length]
-                                : negativePhrases[
-                                    _quizController.currentQuestionIndex %
-                                        negativePhrases.length]
-                            : handVisibilityPhrases[Random().nextInt(4)],
+                                ? _lastAnswerCorrect
+                                    ? positivePhrases[
+                                        _quizController.currentQuestionIndex %
+                                            positivePhrases.length]
+                                    : (_isValidDigit ||
+                                            _gestureType == 'unknown'
+                                        ? negativePhrases[_quizController
+                                                .currentQuestionIndex %
+                                            negativePhrases.length]
+                                        : _specialFeedback)
+                                : handVisibilityPhrases[Random()
+                                    .nextInt(handVisibilityPhrases.length)],
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

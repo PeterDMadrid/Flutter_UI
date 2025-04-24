@@ -81,6 +81,9 @@ class _SigningScreenState extends State<SigningScreen>
 
   File? _capturedImageFile;
   bool _showCapturedImage = false;
+  bool _isValidDigit = false;
+  String _gestureType = 'unknown';
+  String _specialFeedback = '';
 
   Future<void> _captureAndPredict(bool isDarkMode) async {
     if (_isProcessing ||
@@ -110,7 +113,9 @@ class _SigningScreenState extends State<SigningScreen>
           'prediction': -1,
           'label': 'No hand detected',
           'confidence': 0.0,
-          'handedness': 'Unknown'
+          'handedness': 'Unknown',
+          'is_valid_digit': false,
+          'gesture_type': 'unknown'
         };
       });
 
@@ -119,13 +124,21 @@ class _SigningScreenState extends State<SigningScreen>
         _label = prediction['label'] ?? 'Unknown';
         _confidence = prediction['confidence']?.toDouble() ?? 0.0;
         _handedness = prediction['handedness'] ?? 'Unknown';
+        _isValidDigit = prediction['is_valid_digit'] ?? false;
+        _gestureType = prediction['gesture_type'] ?? 'unknown';
         _isProcessing = false;
       });
 
       // Only handle valid predictions
       if (_prediction >= 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _handleAnswer(_prediction, isDarkMode);
+          if (_isValidDigit) {
+            // Handle digits 0-9
+            _handleAnswer(_prediction, isDarkMode);
+          } else {
+            // Handle special gestures
+            _handleSpecialGesture(_label, isDarkMode);
+          }
         });
       } else {
         setState(() {
@@ -149,13 +162,60 @@ class _SigningScreenState extends State<SigningScreen>
         showGif = true;
         showErrMessage = true;
         Future.delayed(Duration(seconds: 4), () {
-            setState(() {
-              showGif = false;
-              showErrMessage = false;
-            });
+          setState(() {
+            showGif = false;
+            showErrMessage = false;
           });
+        });
       });
     }
+  }
+
+// New method to handle special gestures (non-digits)
+  Future<void> _handleSpecialGesture(
+      String gestureLabel, bool isDarkMode) async {
+    // Set to false since this isn't a correct answer for the quiz
+    _lastAnswerCorrect = false;
+
+    // Choose appropriate feedback based on the gesture
+    switch (gestureLabel) {
+      case 'Rockon':
+        _specialFeedback = specialGesturePhrases[0];
+        break;
+      case 'Okay':
+        _specialFeedback = specialGesturePhrases[1];
+        break;
+      case 'Notone':
+        _specialFeedback = specialGesturePhrases[2];
+        break;
+      case 'Nottwo':
+        _specialFeedback = specialGesturePhrases[3];
+        break;
+      case 'El':
+        _specialFeedback = specialGesturePhrases[4];
+        break;
+      default:
+        _specialFeedback =
+            "I don't recognize that gesture.\nPlease show a number.";
+    }
+
+    // Play sound effect for incorrect answer
+    await _audioPlayer.play(AssetSource(AppMedia.incorrectSound));
+
+    // Show feedback UI
+    setState(() {
+      showGif = true;
+      _isProcessing = false;
+
+      // Clear the image after a delay
+      Future.delayed(Duration(seconds: 4), () {
+        setState(() {
+          _showCapturedImage = false;
+          _capturedImageFile = null;
+          showGif = false;
+        });
+      });
+    });
   }
 
   Future<void> _initializeCamera() async {
@@ -513,10 +573,14 @@ class _SigningScreenState extends State<SigningScreen>
                                       ? positivePhrases[_signingController
                                               .currentQuestionIndex %
                                           positivePhrases.length]
-                                      : negativePhrases[_signingController
-                                              .currentQuestionIndex %
-                                          negativePhrases.length]
-                                  : handVisibilityPhrases[Random().nextInt(4)],
+                                      : (_isValidDigit ||
+                                              _gestureType == 'unknown'
+                                          ? negativePhrases[_signingController
+                                                  .currentQuestionIndex %
+                                              negativePhrases.length]
+                                          : _specialFeedback)
+                                  : handVisibilityPhrases[Random()
+                                      .nextInt(handVisibilityPhrases.length)],
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

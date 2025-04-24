@@ -18,7 +18,23 @@ class ImagePredictionService {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        Map<String, dynamic> responseData = json.decode(response.body);
+        
+        // Ensure the expected fields exist, with defaults if they don't
+        // This maintains backward compatibility if your API doesn't immediately return these fields
+        if (!responseData.containsKey('is_valid_digit')) {
+          // For backward compatibility: consider predictions 0-9 as valid digits
+          int prediction = responseData['prediction'] ?? -1;
+          responseData['is_valid_digit'] = (0 <= prediction && prediction <= 9);
+        }
+        
+        if (!responseData.containsKey('gesture_type')) {
+          // For backward compatibility: determine gesture type based on prediction
+          int prediction = responseData['prediction'] ?? -1;
+          responseData['gesture_type'] = (0 <= prediction && prediction <= 9) ? 'digit' : 'special';
+        }
+        
+        return responseData;
       } else {
         throw Exception('Failed to predict: ${response.statusCode}');
       }
