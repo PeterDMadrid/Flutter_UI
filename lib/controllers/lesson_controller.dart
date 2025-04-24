@@ -112,7 +112,7 @@ class LessonController {
     } else if (!_isLastSequence) {
       _nextSequence();
     } else {
-      _resetToBeginning();
+      //_resetToBeginning();
     }
   }
 
