@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hands/base/res/styles/app_styles.dart';
 import 'package:flutter_hands/base/res/global/user_session.dart';
 import 'package:flutter_hands/base/res/global/theme_provider.dart';
+import 'package:flutter_hands/screens/simulation/quick_lesson.dart';
 
 class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
@@ -96,6 +97,21 @@ class _SideMenuState extends State<SideMenu> {
                   ),
                   onTap: () {
                     ThemeManager().toggleTheme();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.play_circle_filled_sharp,
+                      color: AppStyles.getTextColor(isDarkMode)),
+                  title: Text(
+                    'Quick Lesson',
+                    style: AppStyles.getParagraph2(isDarkMode),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const QuickLesson()),
+                    );
                   },
                 ),
                 ListTile(
