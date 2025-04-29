@@ -35,38 +35,38 @@ class QuestionTextWidget extends StatelessWidget {
         style: AppStyles.getHeadLineStyle1(isDarkMode),
         children: showNextButton
             ? [
-                const TextSpan(
-                  text: "You signed ",
-                  style: TextStyle(fontSize: 20),
-                ),
-                TextSpan(
-                  text: "${numberWords[prediction!]} ($prediction)",
-                  style: TextStyle(
-                    fontSize: 25,
-                    color: AppStyles.buttonColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                // const TextSpan(
+                //   text: "You signed ",
+                //   style: TextStyle(fontSize: 20),
+                // ),
+                // TextSpan(
+                //   text: "${numberWords[prediction!]} ($prediction)",
+                //   style: TextStyle(
+                //     fontSize: 25,
+                //     color: AppStyles.buttonColor,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
                 if (prediction != correctNumber) ...[
                   const TextSpan(
                     text:
-                        " instead of",
+                        "Incorrect!",
                     style: TextStyle(
                       fontSize: 20,
                     ),
                   ),
-                  TextSpan(
-                    text:
-                        " ${numberWords[correctNumber]} ($correctNumber)",
-                    style: TextStyle(
-                      fontSize: 25,
-                      color: AppStyles.buttonColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  // TextSpan(
+                  //   text:
+                  //       " ${numberWords[correctNumber]} ($correctNumber)",
+                  //   style: TextStyle(
+                  //     fontSize: 25,
+                  //     color: AppStyles.buttonColor,
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  // ),
                 ] else ...[
                   const TextSpan(
-                    text: " correctly",
+                    text: "Correct!",
                     style: TextStyle(
                       fontSize: 20,
                     ),

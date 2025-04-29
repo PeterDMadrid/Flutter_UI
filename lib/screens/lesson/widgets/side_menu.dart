@@ -103,7 +103,7 @@ class _SideMenuState extends State<SideMenu> {
                   leading: Icon(Icons.play_circle_filled_sharp,
                       color: AppStyles.getTextColor(isDarkMode)),
                   title: Text(
-                    'Quick Lesson',
+                    'Simulation',
                     style: AppStyles.getParagraph2(isDarkMode),
                   ),
                   onTap: () {
