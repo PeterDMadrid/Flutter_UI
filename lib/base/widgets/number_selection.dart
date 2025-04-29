@@ -70,7 +70,7 @@ class _NumberSelectionState extends State<NumberSelection> {
 
     if (input.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter a two-digit number (10-99).';
+        _errorMessage = 'Please enter a number.';
       });
       return;
     }
@@ -143,116 +143,111 @@ class _NumberSelectionState extends State<NumberSelection> {
                         ),
                         const SizedBox(height: 24),
                         if (widget.isTwoDigit) ...[
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      const Color(0xFF0D1B2A).withOpacity(0.25),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                          Center(
+                            child: Container(
+                              width: 120, // Reduced width for two digits
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF0D1B2A)
+                                        .withOpacity(0.25),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: TextField(
+                                controller: _controller,
+                                keyboardType: TextInputType.number,
+                                autofocus: true,
+                                maxLength: 2,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 32, // Larger text
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
                                 ),
-                              ],
-                            ),
-                            child: TextField(
-                              controller: _controller,
-                              keyboardType: TextInputType.number,
-                              autofocus: true,
-                              maxLength: 2,
-                              style: const TextStyle(
-                                  fontSize: 18, color: Colors.black),
-                              decoration: InputDecoration(
-                                labelText: 'Enter a two-digit number (10-99)',
-                                labelStyle: const TextStyle(
-                                  color: Color(0xFF4E6E8E),
-                                  fontSize: 14,
+                                decoration: InputDecoration(
+                                  hintText: '10-99',
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF4E6E8E).withOpacity(0.5),
+                                    fontSize: 22,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  counterText: '',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: _errorMessage != null
+                                          ? Colors.red.withOpacity(0.5)
+                                          : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: _errorMessage != null
+                                          ? Colors.red
+                                          : const Color(0xFF4A90E2),
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                fillColor: Colors.white,
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.never,
-                                counterText: '',
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: const Icon(Icons.clear, size: 18),
-                                  onPressed: () {
-                                    _controller.clear();
-                                    setState(() {
+                                onSubmitted: (_) => _submitNumber(),
+                                // Directly update on every change, forcing rebuild
+                                onChanged: (value) {
+                                  if (value.isEmpty) {
+                                    setModalState(() {
                                       _errorMessage = null;
                                     });
-                                  },
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: _errorMessage != null
-                                        ? Colors.red.withOpacity(0.5)
-                                        : Colors.transparent,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: _errorMessage != null
-                                        ? Colors.red
-                                        : const Color(0xFF4A90E2),
-                                    width: 1.5,
-                                  ),
-                                ),
+                                    return;
+                                  }
+
+                                  final number = int.tryParse(value);
+                                  if (number == null) {
+                                    setModalState(() {
+                                      _errorMessage = 'Invalid number';
+                                    });
+                                    return;
+                                  }
+
+                                  if (number < 10) {
+                                    setModalState(() {
+                                      _errorMessage = 'Must be 10-99';
+                                    });
+                                  } else if (number > 99) {
+                                    setModalState(() {
+                                      _errorMessage = 'Must be 10-99';
+                                    });
+                                  } else {
+                                    setModalState(() {
+                                      _errorMessage = null;
+                                    });
+                                  }
+                                },
                               ),
-                              onSubmitted: (_) => _submitNumber(),
-                              // Directly update on every change, forcing rebuild
-                              onChanged: (value) {
-                                if (value.isEmpty) {
-                                  setModalState(() {
-                                    _errorMessage = null;
-                                  });
-                                  return;
-                                }
-
-                                final number = int.tryParse(value);
-                                if (number == null) {
-                                  setModalState(() {
-                                    _errorMessage =
-                                        'Please enter a valid number.';
-                                  });
-                                  return;
-                                }
-
-                                if (number < 10) {
-                                  setModalState(() {
-                                    _errorMessage =
-                                        'Please enter a two-digit number (10-99).';
-                                  });
-                                } else if (number > 99) {
-                                  setModalState(() {
-                                    _errorMessage =
-                                        'Number must be between 10 and 99.';
-                                  });
-                                } else {
-                                  setModalState(() {
-                                    _errorMessage = null;
-                                  });
-                                }
-                              },
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 6),
                           Container(
                             height: 24,
-                            width: double.infinity,
-                            alignment: Alignment.centerLeft,
+                            alignment:
+                                Alignment.center, // Center the error message
                             child: _errorMessage != null
                                 ? Row(
+                                    mainAxisSize:
+                                        MainAxisSize.min, // Keep row centered
                                     children: [
                                       const Icon(
                                         Icons.error_outline,
@@ -260,23 +255,21 @@ class _NumberSelectionState extends State<NumberSelection> {
                                         size: 16,
                                       ),
                                       const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 13,
-                                          ),
+                                      Text(
+                                        _errorMessage!,
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ],
                                   )
                                 : null,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 8),
                           SizedBox(
-                            width: 200,
-                            height: 45,
+                            width: 160,
+                            height: 50,
                             child: ElevatedButton(
                               onPressed: _submitNumber,
                               style: ElevatedButton.styleFrom(
@@ -290,7 +283,7 @@ class _NumberSelectionState extends State<NumberSelection> {
                               child: const Text(
                                 'Submit',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

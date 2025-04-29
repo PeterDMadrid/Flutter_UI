@@ -221,7 +221,7 @@ class _QuickLessonState extends State<QuickLesson>
         return Scaffold(
           backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
           appBar: AppBar(
-            title: const Text('Quick Lesson - Simulation'),
+            title: const Text('Simulation'),
             backgroundColor: AppStyles.getBackgroundColor(isDarkMode),
             foregroundColor: AppStyles.getTextColor(isDarkMode),
           ),
