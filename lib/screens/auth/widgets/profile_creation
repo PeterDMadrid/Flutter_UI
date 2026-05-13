@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_hands/base/res/styles/app_styles.dart';
+
+class ProfileCreation extends StatelessWidget {
+  final TextEditingController usernameController;
+  final double screenWidth;
+  final double screenHeight;
+  final double fontSize;
+  final double gridSpacing;
+  final List<Map<String, dynamic>> profilePictures;
+  final int? selectedProfilePictureId;
+  final Function(int) onProfilePictureSelect;
+  final VoidCallback onCreateProfile;
+  final VoidCallback onCancel;
+
+  const ProfileCreation({
+    super.key,
+    required this.usernameController,
+    required this.screenWidth,
+    required this.screenHeight,
+    required this.fontSize,
+    required this.gridSpacing,
+    required this.profilePictures,
+    required this.selectedProfilePictureId,
+    required this.onProfilePictureSelect,
+    required this.onCreateProfile,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: TextField(
+              controller: usernameController,
+              style: AppStyles.paragraph1,
+              decoration: InputDecoration(
+                labelText: 'Enter username',
+                labelStyle: AppStyles.paragraph2,
+                enabledBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.02),
+          Expanded(
+            child: GridView.builder(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: gridSpacing,
+                mainAxisSpacing: gridSpacing,
+                childAspectRatio: 1,
+              ),
+              itemCount: profilePictures.length,
+              itemBuilder: (context, index) {
+                final profile = profilePictures[index];
+                return GestureDetector(
+                  onTap: () => onProfilePictureSelect(profile['id']),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          profile['image'],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.error,
+                              color: Colors.red,
+                            );
+                          },
+                        ),
+                      ),
+                      if (selectedProfilePictureId == profile['id'])
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.blue,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.02),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onCreateProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppStyles.buttonColor, // Set the background color
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                      ),
+                    ),
+                    child: const Text(
+                      'Create Profile',
+                      style: TextStyle(color: Colors.white), // Set text color
+                    ),
+                  ),
+                ),
+                SizedBox(width: screenWidth * 0.04),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onCancel,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppStyles.buttonColor, // Set the background color
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                      ),
+                    ),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.white), // Set text color
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.02),
+        ],
+      ),
+    );
+  }
+}
